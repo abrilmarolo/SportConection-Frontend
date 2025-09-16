@@ -1,0 +1,68 @@
+# Estructura del Proyecto SportConnection
+
+## Organización de Carpetas
+
+### 📁 src/
+Carpeta principal del código fuente.
+
+### 📁 components/
+Componentes reutilizables de la aplicación.
+- **Navbar/**: Barra de navegación principal
+  - `Navbar.jsx`: Componente principal de navegación
+  - **components/**: Sub-componentes de la barra de navegación
+    - `AuthButtons.jsx`: Botones de autenticación
+    - `HamburgerMenu.jsx`: Menú móvil hamburguesa
+    - `Logo.jsx`: Componente del logo
+    - `MobileMenu.jsx`: Menú para dispositivos móviles
+    - `NavButtons.jsx`: Botones de navegación
+    - `NavigationLinks.jsx`: Enlaces de navegación
+    - `ToggleDarkMode.jsx`: Switch para modo oscuro/claro
+    - `UserButtons.jsx`: Botones específicos del usuario
+- **Footer/**: Pie de página
+
+### 📁 context/
+Gestión del estado global de la aplicación.
+- `AdminContext.jsx`: Contexto para funcionalidades de administrador
+- `AuthContext.jsx`: Contexto para autenticación y estado del usuario
+
+### 📁 pages/
+Páginas principales de la aplicación.
+- **Abm/**: Administración
+- **AboutUs/**: Página Acerca de Nosotros
+- **Chat/**: Sistema de chat
+- **Contact/**: Página de contacto
+- **Home/**: Página principal
+  - **components/**
+    - `PublicHome.jsx`: Vista pública
+    - `UserHome.jsx`: Vista de usuario autenticado
+- **LogIn/**: Página de inicio de sesión
+- **Map/**: Funcionalidad de mapas
+- **Match/**: Sistema de matchmaking
+- **Post/**: Sistema de publicaciones
+- **Profile/**: Perfil de usuario
+- **Register/**: Registro de usuario
+  - **components/**
+    - `RegisterPartTwo.jsx`: Segunda parte del registro
+
+### 📁 routes/
+Configuración de rutas de la aplicación.
+- `routes.jsx`: Definición central de rutas
+
+### 📁 services/
+Servicios y utilidades.
+- `authService.js`: Servicio de autenticación
+- **api/**
+  - `index.js`: Configuración de Axios y manejo de peticiones
+
+## Archivos Principales
+- `App.jsx`: Componente raíz de la aplicación
+- `main.jsx`: Punto de entrada de la aplicación
+- `index.css`: Estilos globales
+- `App.css`: Estilos específicos de App
+
+## Tecnologías Principales
+- React
+- React Router
+- Axios para peticiones HTTP
+- Tailwind CSS para estilos
+- Context API para estado global
