@@ -15,7 +15,7 @@ export function AuthProvider({ children }) {
     const initAuth = () => {
       const token = localStorage.getItem('token');
       const userData = localStorage.getItem('user');
-      
+
       if (token && userData) {
         try {
           const parsedUser = JSON.parse(userData);
@@ -33,44 +33,83 @@ export function AuthProvider({ children }) {
     initAuth();
   }, []);
 
-
-  const login = async (credentials) => {
+    const register = async (userData) => {
     try {
       setLoading(true);
       setAuthError(null);
-      
-      const response = await authService.login(credentials);
-      
-      localStorage.setItem('token', response.token);
-      localStorage.setItem('user', JSON.stringify(response.user));
-      
-      setUser(response.user);
-      setIsAuthenticated(true);
-      
-      navigate('/');
+      const response = await authService.register(userData);
       return response;
     } catch (error) {
-      console.error('Login error in AuthContext:', error.message);
-      setAuthError('Credenciales Invalidas');
-      throw error; 
+      setAuthError(error.message || 'Error en el registro');
+      throw error;
     } finally {
       setLoading(false);
     }
   };
 
-    const googleLogin = async (token) => {
+  const completeProfile = async (profileData) => {
     try {
       setLoading(true);
       setAuthError(null);
+      const response = await authService.completeProfile(profileData);
       
-      const response = await authService.googleLogin(token);
+      setUser(prevUser => ({
+        ...prevUser,
+        ...response.user
+      }));
       
+      localStorage.setItem('user', JSON.stringify({
+        ...user,
+        ...response.user
+      }));
+      
+      return response;
+    } catch (error) {
+      setAuthError(error.message || 'Error al completar el perfil');
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  const login = async (credentials) => {
+    try {
+      setLoading(true);
+      setAuthError(null);
+
+      const response = await authService.login(credentials);
+
       localStorage.setItem('token', response.token);
       localStorage.setItem('user', JSON.stringify(response.user));
-      
+
       setUser(response.user);
       setIsAuthenticated(true);
-      
+
+      navigate('/');
+      return response;
+    } catch (error) {
+      console.error('Login error in AuthContext:', error.message);
+      setAuthError('Credenciales Invalidas');
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const googleLogin = async (token) => {
+    try {
+      setLoading(true);
+      setAuthError(null);
+
+      const response = await authService.googleLogin(token);
+
+      localStorage.setItem('token', response.token);
+      localStorage.setItem('user', JSON.stringify(response.user));
+
+      setUser(response.user);
+      setIsAuthenticated(true);
+
       navigate('/');
       return response;
     } catch (error) {
@@ -85,10 +124,10 @@ export function AuthProvider({ children }) {
     try {
       setLoading(true);
       setAuthError(null);
-      
+
       const updatedUser = await authService.updateProfile(updates);
       setUser(updatedUser);
-      
+
       localStorage.setItem('user', JSON.stringify(updatedUser));
       return updatedUser;
     } catch (error) {
@@ -99,25 +138,25 @@ export function AuthProvider({ children }) {
     }
   };
 
-    const getProfile = async () => {
+  const getMyProfile = async () => {
     try {
       setLoading(true);
       setAuthError(null);
-      
-      const profileData = await authService.getProfile();
-      
+
+      const profileData = await authService.getMyProfile();
+
       // Actualizar el estado del usuario con los datos del perfil
       setUser(prevUser => ({
         ...prevUser,
         ...profileData
       }));
-      
+
       // Actualizar localStorage
       localStorage.setItem('user', JSON.stringify({
         ...user,
         ...profileData
       }));
-      
+
       return profileData;
     } catch (error) {
       setAuthError(error.message || 'Error al obtener el perfil');
@@ -127,6 +166,19 @@ export function AuthProvider({ children }) {
     }
   };
 
+    const deleteProfile = async () => {
+    try {
+      setLoading(true);
+      setAuthError(null);
+      await authService.deleteMyProfile();
+      logout(); // Limpia el estado y redirige
+    } catch (error) {
+      setAuthError(error.message || 'Error al eliminar el perfil');
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const logout = () => {
     localStorage.removeItem('token');
@@ -142,16 +194,19 @@ export function AuthProvider({ children }) {
   };
 
   const value = {
-    user, 
-    isAuthenticated, 
-    login, 
+    user,
+    isAuthenticated,
+    login,
     logout,
     loading,
     authError,
     clearError,
     googleLogin,
     updateProfile,
-    getProfile 
+    getMyProfile,
+    register,         
+    completeProfile, 
+    deleteProfile
   };
 
   return (
