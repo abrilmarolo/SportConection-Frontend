@@ -4,13 +4,7 @@ import { useNavigate } from 'react-router-dom';
 export function RegisterPartTwo() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    userType: '',
-    sport: '',
-    position: '',
-    company: '',
-    specialty: '',
-    teamName: '',
-    league: ''
+
   });
 
   const handleChange = (e) => {
@@ -32,7 +26,7 @@ export function RegisterPartTwo() {
   };
 
   return (
-     <section className='m-10'>
+    <section className='m-10'>
       <div className="max-w-md mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
         <h2 className="text-2xl text-center font-bold mb-6 text-gray-800 dark:text-white">Tipo de Usuario</h2>
         <div className="space-y-4">
@@ -52,8 +46,8 @@ export function RegisterPartTwo() {
               <input
                 type="radio"
                 name="userType"
-                value="representative"
-                checked={formData.userType === 'representative'}
+                value="agent"
+                checked={formData.userType === 'agent'}
                 onChange={handleChange}
 
               />
@@ -80,66 +74,248 @@ export function RegisterPartTwo() {
                 <div className="space-y-4">
                   <input
                     type="text"
-                    name="sport"
-                    value={formData.sport || ''}
+                    name="name"
+                    value={formData.name}
                     onChange={handleChange}
-                    placeholder="Deporte"
+                    placeholder="Nombre"
+                    required
                     className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-700"
                   />
                   <input
                     type="text"
-                    name="position"
-                    value={formData.position || ''}
+                    name="last_name"
+                    value={formData.last_name}
                     onChange={handleChange}
-                    placeholder="Posición"
+                    placeholder="Apellido"
+                    required
                     className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-700"
                   />
+                  <input
+                    type="date"
+                    name="birthdate"
+                    value={formData.birthdate}
+                    onChange={handleChange}
+                    placeholder="Fecha de Nacimiento"
+                    required
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-700"
+                  />
+                  <input
+                    type="number"
+                    name="height"
+                    value={formData.height}
+                    onChange={handleChange}
+                    placeholder="Altura"
+                    required
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-700"
+                  />
+                  <input
+                    type="number"
+                    name="weight"
+                    value={formData.weight}
+                    onChange={handleChange}
+                    placeholder="Peso"
+                    required
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-700"
+                  />
+                  
+                  <input
+                    type="number"
+                    name="sport_id"
+                    value={formData.sport_id}
+                    onChange={handleChange}
+                    placeholder="Deporte" // Aca tiene que llegar un selected con los deportes que traes del backend y se envía el id
+                    required
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-700"
+                  />
+                  <input
+                    type="number"
+                    name="location_id"
+                    value={formData.location_id}
+                    onChange={handleChange}
+                    placeholder="Ubicación" // Aca tiene que llegar un selected con las ubicaciones que traes del backend y se envía el id
+                    required
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-700"
+                  />
+                  <input
+                    type="text"
+                    name="phone_number"
+                    value={formData.phone_number}
+                    onChange={handleChange}
+                    placeholder="Nro de Teléfono"
+                    required
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-700"
+                  />
+                  <input
+                    type="text"
+                    name="description"
+                    value={formData.description}
+                    onChange={handleChange}
+                    placeholder="Descripción"
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-700"
+                  />
+                  <input
+                    type="text"
+                    name="ig_user"
+                    value={formData.ig_user}
+                    onChange={handleChange}
+                    placeholder="Usuario de Instagram"
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-700"
+                  />
+                  <input
+                    type="text"
+                    name="x_user"
+                    value={formData.x_user}
+                    onChange={handleChange}
+                    placeholder="Usuario de Twitter"
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-700"
+                  />
+                  
                 </div>
               )}
-              {formData.userType === 'representative' && (
+              {formData.userType === 'agent' && (
                 <div className="space-y-4">
+                   <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    placeholder="Nombre"
+                    required
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-700"
+                  />
                   <input
                     type="text"
-                    name="company"
-                    value={formData.company || ''}
+                    name="last_name"
+                    value={formData.last_name}
+                    onChange={handleChange}
+                    placeholder="Apellido"
+                    required
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-700"
+                  />
+                  <input
+                    type="text"
+                    name="description"
+                    value={formData.description}
+                    onChange={handleChange}
+                    placeholder="Descripción"
+                    required
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-700"
+                  />
+                  <input
+                    type="number"
+                    name="location_id"
+                    value={formData.location_id}
+                    onChange={handleChange}
+                    placeholder="Ubicación" // Aca tiene que llegar un selected con las ubicaciones que traes del backend y se envía el id
+                    required
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-700"
+                  />
+                  <input
+                    type="text"
+                    name="phone_number"
+                    value={formData.phone_number}
+                    onChange={handleChange}
+                    placeholder="Nro de Teléfono"
+                    required
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-700"
+                  />
+                  <input
+                    type="text"
+                    name="ig_user"
+                    value={formData.ig_user}
+                    onChange={handleChange}
+                    placeholder="Usuario de Instagram"
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-700"
+                  />
+                  <input
+                    type="text"
+                    name="x_user"
+                    value={formData.x_user}
+                    onChange={handleChange}
+                    placeholder="Usuario de Twitter"
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-700"
+                  />
+                  <input
+                    type="text"
+                    name="agency"
+                    value={formData.agency || ''}
                     onChange={handleChange}
                     placeholder="Empresa"
                     className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-700"
                   />
-                  <input
-                    type="text"
-                    name="specialty"
-                    value={formData.specialty || ''}
-                    onChange={handleChange}
-                    placeholder="Especialidad"
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-700"
-                  />
+                  
                 </div>
               )}
               {formData.userType === 'team' && (
                 <div className="space-y-4">
                   <input
                     type="text"
-                    name="teamName"
-                    value={formData.teamName || ''}
+                    name="name"
+                    value={formData.name || ''}
                     onChange={handleChange}
                     placeholder="Nombre del equipo"
+                    required
                     className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-700"
                   />
                   <input
                     type="text"
-                    name="sport"
-                    value={formData.sport || ''}
+                    name="job"
+                    value={formData.job}
                     onChange={handleChange}
-                    placeholder="Deporte"
+                    placeholder="Nombre del representante del equipo"
+                    required
                     className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-700"
                   />
                   <input
                     type="text"
-                    name="league"
-                    value={formData.league || ''}
+                    name="description"
+                    value={formData.description}
                     onChange={handleChange}
-                    placeholder="Liga"
+                    placeholder="Descripción"
+                    required
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-700"
+                  />
+                  <input
+                    type="number"
+                    name="sport_id"
+                    value={formData.sport_id}
+                    onChange={handleChange}
+                    placeholder="Deporte" // Aca tiene que llegar un selected con los deportes que traes del backend y se envía el id
+                    required
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-700"
+                  />
+                  <input
+                    type="number"
+                    name="location_id"
+                    value={formData.location_id}
+                    onChange={handleChange}
+                    placeholder="Ubicación" // Aca tiene que llegar un selected con las ubicaciones que traes del backend y se envía el id
+                    required
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-700"
+                  />
+                  <input
+                    type="text"
+                    name="phone_number"
+                    value={formData.phone_number}
+                    onChange={handleChange}
+                    placeholder="Nro de Teléfono"
+                    required
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-700"
+                  />
+                  <input
+                    type="text"
+                    name="ig_user"
+                    value={formData.ig_user}
+                    onChange={handleChange}
+                    placeholder="Usuario de Instagram"
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-700"
+                  />
+                  <input
+                    type="text"
+                    name="x_user"
+                    value={formData.x_user}
+                    onChange={handleChange}
+                    placeholder="Usuario de Twitter"
                     className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-700"
                   />
                 </div>

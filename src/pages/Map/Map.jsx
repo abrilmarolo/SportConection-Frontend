@@ -2,17 +2,18 @@ import React from 'react'
 import { useAuth } from '../../context/AuthContext';
 
 export function Map() {
-  const { isAuthenticated, user } = useAuth();
-  
-    return(
+    const { isAuthenticated } = useAuth();
+
+    return (
         <>
             {isAuthenticated ? (
-                <div>Map - User: {user.name}</div>
+                <div className='min-h-screen m-4'>
+                    <h1 className='text-2xl '>Soy Mapa</h1>
+                </div>
             ) : (
-                <div>No Tenes Acceso</div>
+                <div className='min-h-screen' >No Tenes Acceso</div>
             )}
         </>
     );
 }
 
-   

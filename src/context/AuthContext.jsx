@@ -33,6 +33,7 @@ export function AuthProvider({ children }) {
     initAuth();
   }, []);
 
+
   const login = async (credentials) => {
     try {
       setLoading(true);
@@ -49,13 +50,83 @@ export function AuthProvider({ children }) {
       navigate('/');
       return response;
     } catch (error) {
-      console.error('Login error in AuthContext:', error);
+      console.error('Login error in AuthContext:', error.message);
       setAuthError('Credenciales Invalidas');
       throw error; 
     } finally {
       setLoading(false);
     }
   };
+
+    const googleLogin = async (token) => {
+    try {
+      setLoading(true);
+      setAuthError(null);
+      
+      const response = await authService.googleLogin(token);
+      
+      localStorage.setItem('token', response.token);
+      localStorage.setItem('user', JSON.stringify(response.user));
+      
+      setUser(response.user);
+      setIsAuthenticated(true);
+      
+      navigate('/');
+      return response;
+    } catch (error) {
+      setAuthError(error.message || 'Error en el inicio de sesión con Google');
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateProfile = async (updates) => {
+    try {
+      setLoading(true);
+      setAuthError(null);
+      
+      const updatedUser = await authService.updateProfile(updates);
+      setUser(updatedUser);
+      
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      return updatedUser;
+    } catch (error) {
+      setAuthError(error.message || 'Error al actualizar el perfil');
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+    const getProfile = async () => {
+    try {
+      setLoading(true);
+      setAuthError(null);
+      
+      const profileData = await authService.getProfile();
+      
+      // Actualizar el estado del usuario con los datos del perfil
+      setUser(prevUser => ({
+        ...prevUser,
+        ...profileData
+      }));
+      
+      // Actualizar localStorage
+      localStorage.setItem('user', JSON.stringify({
+        ...user,
+        ...profileData
+      }));
+      
+      return profileData;
+    } catch (error) {
+      setAuthError(error.message || 'Error al obtener el perfil');
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   const logout = () => {
     localStorage.removeItem('token');
@@ -77,7 +148,10 @@ export function AuthProvider({ children }) {
     logout,
     loading,
     authError,
-    clearError
+    clearError,
+    googleLogin,
+    updateProfile,
+    getProfile 
   };
 
   return (

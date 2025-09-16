@@ -16,7 +16,7 @@ export function Navbar() {
 
 
   const navRoutes = routes.filter(route =>
-    route.path == '/AcercaDeNosotros' || route.path == '/Contacto'
+    route.path == '/AcercaDeNosotros' || route.path == '/PreguntasFrecuentes' || route.path == '/Contacto'
   );
 
   const authRoutes = routes.filter(route =>
@@ -31,7 +31,7 @@ export function Navbar() {
 
 
   return (
-    <header className='bg-white dark:bg-gray-900 dark:border-b-1 dark:border-gray-700 shadow-md px-4 py-4'>
+    <header className='bg-white dark:bg-gray-900 dark:border-b-1 dark:border-gray-700 shadow-md px-2 py-4'>
       <nav className='mx-auto'>
         <div className='flex justify-between items-center'>
           <Logo />

@@ -1,9 +1,18 @@
 import React from 'react'
+import { useAuth } from '../../context/AuthContext';
 
 export function Profile() {
+  const { isAuthenticated, user } = useAuth();
+
   return (
-    <div>
-        <h1 className='text-3xl font-bold mb-4'>Perfil de Usuario</h1>
-    </div>
-  )
+    <>
+      {isAuthenticated ? (
+        <div className='min-h-screen m-4'>
+          <h1 className='text-2xl '>Soy Perfil de {user.email}</h1>
+        </div>
+      ) : (
+        <div className='min-h-screen'>No Tenes Acceso</div>
+      )}
+    </>
+  );
 }

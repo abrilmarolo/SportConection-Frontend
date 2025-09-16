@@ -8,11 +8,13 @@ import { Match } from "../pages/Match/Match";
 import { Chat } from "../pages/Chat/Chat";
 import { Map } from "../pages/Map/Map";
 import { Profile } from "../pages/Profile/Profile";
+import { FrequentQuestions } from "../pages/FrequentQuestions/FrequentQuestions";
 import { RegisterPartTwo } from "../pages/Register/components/RegisterPartTwo";
 
 export const routes = [
     { path: "/", element: <Home />, name: "" },
-    { path: "/AcercaDeNosotros", element: <AboutUs />, name: "Acerca de Nosotros" },
+    { path: "/AcercaDeNosotros", element: <AboutUs />, name: "Acerca de" },
+    { path: "/PreguntasFrecuentes", element: <FrequentQuestions />, name: "Preguntas Frecuentes" },
     { path: "/Contacto", element: <Contact />, name: "Contacto" },
     { path: "/Registro", element: <Register />, name: "Registrarse"},
     { path: "/InicioSesion", element: <LogIn />, name: "Iniciar Sesión"},
