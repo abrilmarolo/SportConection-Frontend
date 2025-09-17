@@ -24,9 +24,9 @@ export function Profile() {
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center p-8 bg-red-50 dark:bg-gray-800 rounded-lg">
-          <h2 className="text-xl text-red-600 dark:text-red-400">Acceso Denegado</h2>
-          <p className="mt-2">Debes iniciar sesión para ver tu perfil</p>
+        <div className="text-center p-8 bg-red-800 dark:bg-red-900 rounded-lg">
+          <h2 className="text-2xl text-white font-normal">Acceso Denegado</h2>
+          <p className="mt-2 text-white">Debes iniciar sesión para ver tu perfil</p>
         </div>
       </div>
     );

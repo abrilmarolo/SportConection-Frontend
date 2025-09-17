@@ -19,7 +19,7 @@ export const routes = [
     { path: "/Registro", element: <Register />, name: "Registrarse"},
     { path: "/InicioSesion", element: <LogIn />, name: "Iniciar Sesión"},
     { path: "/RegistroTipoDeUsuario", element: <RegisterPartTwo />, name: "Tipo de Usuario" },
-    { path: "/Post", element: <Post />, name: "Publicaciones"},
+    { path: "/Publicaciones", element: <Post />, name: "Publicaciones"},
     { path: "/Match", element: <Match />, name: "Hacer Match"},
     { path: "/Chat", element: <Chat />, name: "Chats"},
     { path: "/Mapa", element: <Map />, name: "Mapa"},

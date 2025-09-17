@@ -24,7 +24,7 @@ export function Navbar() {
   );
 
   const userRoutes = routes.filter(route =>
-    route.path == '/Post' || route.path == '/Match' || route.path == '/Chat'|| route.path == '/Mapa'
+    route.path == '/Publicaciones' || route.path == '/Match' || route.path == '/Chat'|| route.path == '/Mapa'
   );
 
 

@@ -84,7 +84,7 @@ export function Contact() {
             </div>
             <button
               type="submit"
-              className="w-full py-2 rounded-3xl text-white bg-blue-500 hover:bg-blue-700"
+              className="w-full py-2 rounded-3xl text-white bg-blue-600 hover:bg-blue-700"
             >
               Enviar Consulta
             </button>

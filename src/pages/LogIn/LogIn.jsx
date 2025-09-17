@@ -112,9 +112,9 @@ export function LogIn() {
           <button
             type="submit"
             disabled={isLoading}
-            className={`w-full py-2 rounded-3xl text-white ${isLoading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-700'}`}
+            className={`w-full py-2 rounded-3xl text-white ${isLoading ? 'bg-blue-400 cursor-pointer' : 'bg-blue-700 hover:bg-blue-500 cursor-pointer'}`}
           >
-            {isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
+            {isLoading ? 'Iniciando Sesión...' : 'Iniciar Sesión'}
           </button>
 
           <div className="relative my-3">
@@ -132,7 +132,7 @@ export function LogIn() {
             type="button"
             onClick={handleGoogleLogin}
             disabled={isLoading}
-            className="w-full py-2 px-4 flex items-center justify-center gap-2 bg-white border border-gray-300 rounded-3xl text-gray-700 hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:bg-gray-600"
+            className="w-full py-2 px-4 flex items-center justify-center gap-2 bg-white border border-gray-300 rounded-3xl text-gray-700 hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:bg-gray-600 cursor-pointer"
           >
             <FaGoogle />
             Iniciar sesión con Google
