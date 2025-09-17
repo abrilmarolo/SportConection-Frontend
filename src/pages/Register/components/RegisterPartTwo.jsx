@@ -1,11 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { getAllLocations } from '../../../services/locationService';
+import { getAllSports } from '../../../services/sportService';
 import { useNavigate } from 'react-router-dom';
 
 export function RegisterPartTwo() {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState({});
+  const [ubicaciones, setUbicaciones] = useState([]);
+  const [deportes, setDeportes] = useState([]);
 
-  });
+  useEffect(() => {
+    getAllLocations().then(data => setUbicaciones(data));
+  }, []);
+
+  useEffect(() => {
+  getAllSports().then(data => setDeportes(data));
+}, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -118,24 +128,36 @@ export function RegisterPartTwo() {
                     className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-700"
                   />
                   
-                  <input
-                    type="number"
+                  <select
+                    id="sport_id"
                     name="sport_id"
-                    value={formData.sport_id}
+                    value={formData.sport_id || ""}
                     onChange={handleChange}
-                    placeholder="Deporte" // Aca tiene que llegar un selected con los deportes que traes del backend y se envía el id
                     required
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-700"
-                  />
-                  <input
-                    type="number"
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white dark:bg-gray-700 text-black dark:text-white"
+                  >
+                    <option value="" disabled>Seleccionar un deporte</option>
+                    {deportes.map(deporte => (
+                      <option key={deporte.id} value={deporte.id}>
+                        {deporte.name}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    id="location_id"
                     name="location_id"
-                    value={formData.location_id}
+                    value={formData.location_id || ""}
                     onChange={handleChange}
-                    placeholder="Ubicación" // Aca tiene que llegar un selected con las ubicaciones que traes del backend y se envía el id
                     required
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-700"
-                  />
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white dark:bg-gray-700 text-black dark:text-white"
+                  >
+                    <option value="" disabled>Seleccionar una ubicación</option>
+                    {ubicaciones.map(ubicacion => (
+                      <option key={ubicacion.id} value={ubicacion.id}>
+                        {ubicacion.country} - {ubicacion.province} - {ubicacion.city}
+                      </option>
+                    ))}
+                  </select>
                   <input
                     type="text"
                     name="phone_number"
@@ -201,15 +223,21 @@ export function RegisterPartTwo() {
                     required
                     className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-700"
                   />
-                  <input
-                    type="number"
+                  <select
+                    id="location_id"
                     name="location_id"
-                    value={formData.location_id}
+                    value={formData.location_id || ""}
                     onChange={handleChange}
-                    placeholder="Ubicación" // Aca tiene que llegar un selected con las ubicaciones que traes del backend y se envía el id
                     required
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-700"
-                  />
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white dark:bg-gray-700 text-black dark:text-white"
+                  >
+                    <option value="" disabled>Seleccionar una ubicación</option>
+                    {ubicaciones.map(ubicacion => (
+                      <option key={ubicacion.id} value={ubicacion.id}>
+                        {ubicacion.country} - {ubicacion.province} - {ubicacion.city}
+                      </option>
+                    ))}
+                  </select>
                   <input
                     type="text"
                     name="phone_number"
@@ -275,24 +303,36 @@ export function RegisterPartTwo() {
                     required
                     className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-700"
                   />
-                  <input
-                    type="number"
+                  <select
+                    id="sport_id"
                     name="sport_id"
-                    value={formData.sport_id}
+                    value={formData.sport_id || ""}
                     onChange={handleChange}
-                    placeholder="Deporte" // Aca tiene que llegar un selected con los deportes que traes del backend y se envía el id
                     required
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-700"
-                  />
-                  <input
-                    type="number"
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white dark:bg-gray-700 text-black dark:text-white"
+                  >
+                    <option value="" disabled>Seleccionar un deporte</option>
+                    {deportes.map(deporte => (
+                      <option key={deporte.id} value={deporte.id}>
+                        {deporte.name}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    id="location_id"
                     name="location_id"
-                    value={formData.location_id}
+                    value={formData.location_id || ""}
                     onChange={handleChange}
-                    placeholder="Ubicación" // Aca tiene que llegar un selected con las ubicaciones que traes del backend y se envía el id
                     required
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-700"
-                  />
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white dark:bg-gray-700 text-black dark:text-white"
+                  >
+                    <option value="" disabled>Seleccionar una ubicación</option>
+                    {ubicaciones.map(ubicacion => (
+                      <option key={ubicacion.id} value={ubicacion.id}>
+                        {ubicacion.country} - {ubicacion.province} - {ubicacion.city}
+                      </option>
+                    ))}
+                  </select>
                   <input
                     type="text"
                     name="phone_number"
