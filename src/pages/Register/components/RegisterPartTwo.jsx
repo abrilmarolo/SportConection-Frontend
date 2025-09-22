@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { getAllLocations } from '../../../services/locationService';
-import { getAllSports } from '../../../services/sportService';
+import { locationService } from '../../../services/locationService';
+import { sportService } from '../../../services/sportService';
 import { useNavigate } from 'react-router-dom';
 
 export function RegisterPartTwo() {
@@ -10,12 +10,32 @@ export function RegisterPartTwo() {
   const [deportes, setDeportes] = useState([]);
 
   useEffect(() => {
-    getAllLocations().then(data => setUbicaciones(data));
+    const fetchLocations = async () => {
+      try {
+        const data = await locationService.getAllLocations();
+        setUbicaciones(data);
+      } catch (error) {
+        console.error('Error fetching locations:', error);
+        setUbicaciones([]); // Set empty array on error
+      }
+    };
+
+    fetchLocations();
   }, []);
 
   useEffect(() => {
-  getAllSports().then(data => setDeportes(data));
-}, []);
+    const fetchSports = async () => {
+      try {
+        const data = await sportService.getAllSports();
+        setDeportes(data);
+      } catch (error) {
+        console.error('Error fetching sports:', error);
+        setDeportes([]); // Set empty array on error
+      }
+    };
+
+    fetchSports();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

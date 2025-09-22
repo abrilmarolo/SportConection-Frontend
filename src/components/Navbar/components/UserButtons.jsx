@@ -2,9 +2,9 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { routes } from '../../../routes/routes';
 import { useAuth } from '../../../context/AuthContext';
+import { profileRoute } from '../../../routes/routes';
 
 export function UserButtons({ user }) {
-  const profileRoute = routes.find(route => route.path === '/Perfil');
   const { logout } = useAuth();
 
   return (

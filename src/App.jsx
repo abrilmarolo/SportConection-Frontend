@@ -1,7 +1,8 @@
 import { Navbar } from "./components/Navbar/Navbar";
 import { Footer } from "./components/Footer/Footer";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider, useAuth } from "./context/AuthContext";
+import { AuthProvider } from "./context/AuthContext";
+import { AdminProvider } from "./context/AdminContext";
 import { routes } from "./routes/routes";
 import './App.css'
 
@@ -10,17 +11,21 @@ function App() {
     <>
       <BrowserRouter>
         <AuthProvider>
-          <Navbar />
-          <Routes>
-            {routes.map((route) => (
-              <Route
-                key={route.name}
-                path={route.path}
-                element={route.element}
-              />
-            ))}
-          </Routes>
-          <Footer />
+          <AdminProvider>
+            <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+              <Navbar />
+              <Routes>
+                {routes.map((route) => (
+                  <Route
+                    key={route.name}
+                    path={route.path}
+                    element={route.element}
+                  />
+                ))}
+              </Routes>
+              <Footer />
+            </div>
+          </AdminProvider>
         </AuthProvider>
         
       </BrowserRouter>

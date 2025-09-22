@@ -2,10 +2,10 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { routes } from '../../../routes/routes';
 import { useAuth } from '../../../context/AuthContext';
+import { profileRoute } from '../../../routes/routes';
 
 export function HamburgerMenu({ isOpen, setIsOpen }) {
   const registerRoute = routes.find(route => route.path === '/Registro');
-  const profileRoute = routes.find(route => route.path === '/Perfil');
   const { logout } = useAuth();
   const { isAuthenticated, user } = useAuth();
   return (
