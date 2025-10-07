@@ -13,7 +13,7 @@ export const venueService = {
 
   getSports: async () => {
     try {
-      const response = await api.get('/sports');
+      const response = await api.get('/lookup/sports');
       return response.data;
     } catch (error) {
       console.error('Error al obtener deportes:', error);
