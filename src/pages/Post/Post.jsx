@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import api from '../../services/api';
 
 export function Post() {
   const { isAuthenticated, user } = useAuth();
@@ -21,8 +22,6 @@ export function Post() {
   const [deletingPosts, setDeletingPosts] = useState(new Set());
   const [activeTab, setActiveTab] = useState('para-ti'); // 'para-ti' o 'mis-posts'
 
-  const API_BASE_URL = 'http://localhost:3000';
-
   // Cargar publicaciones desde el backend
   useEffect(() => {
     if (isAuthenticated) {
@@ -35,20 +34,8 @@ export function Post() {
       setLoading(true);
       setError(null);
       
-      const response = await fetch(`${API_BASE_URL}/posts`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Error al cargar publicaciones');
-      }
-
-      const data = await response.json();
-      setPosts(data.posts || data || []);
+      const response = await api.get('/posts');
+      setPosts(response.data.posts || response.data || []);
     } catch (error) {
       setError('Error al cargar las publicaciones');
       console.error('Error loading posts:', error);
@@ -66,24 +53,11 @@ export function Post() {
     setIsPosting(true);
     
     try {
-      // Cambiar a JSON en lugar de FormData
       const postData = {
         text: newPost.content, // El backend espera 'text' no 'content'
       };
 
-      const response = await fetch(`${API_BASE_URL}/posts`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(postData)
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Error al crear publicación: ${errorText}`);
-      }
+      await api.post('/posts', postData);
 
       // Recargar publicaciones
       await loadPosts();
@@ -113,21 +87,8 @@ export function Post() {
 
   const loadComments = async (postId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/posts/${postId}/comments`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (!response.ok) {
-        // Si no hay endpoint de comentarios, usar comentarios vacíos
-        console.warn('Comments endpoint not available');
-        return;
-      }
-
-      const data = await response.json();
+      const response = await api.get(`/posts/${postId}/comments`);
+      const data = response.data;
       
       // Actualizar el post con los comentarios
       setPosts(posts.map(post => 
@@ -148,18 +109,7 @@ export function Post() {
     if (!commentText?.trim()) return;
 
     try {
-      const response = await fetch(`${API_BASE_URL}/posts/${postId}/comments`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ text: commentText }) // Cambiar 'content' a 'text'
-      });
-
-      if (!response.ok) {
-        throw new Error('Error al agregar comentario');
-      }
+      await api.post(`/posts/${postId}/comments`, { text: commentText });
 
       // Limpiar campo de comentario
       setCommentTexts(prev => ({
@@ -279,21 +229,8 @@ export function Post() {
     
     try {
       console.log('Intentando eliminar post:', postId);
-      const response = await fetch(`${API_BASE_URL}/posts/${postId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      console.log('Respuesta del servidor:', response.status, response.statusText);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Error del servidor:', errorText);
-        throw new Error(`Error al eliminar la publicación: ${response.status} - ${errorText}`);
-      }
+      await api.delete(`/posts/${postId}`);
+      console.log('Post eliminado exitosamente');
 
       // Actualizar la lista de posts removiendo el eliminado
       setPosts(posts.filter(post => (post._id || post.id) !== postId));

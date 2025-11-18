@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
+import { FaInstagram, FaTwitter } from 'react-icons/fa';
 
 export function Match() {
     const { isAuthenticated } = useAuth();
@@ -533,10 +534,14 @@ export function Match() {
                                                 {(additionalInfo.social?.instagram || additionalInfo.social?.twitter) && (
                                                     <div className="flex gap-2 mt-2">
                                                         {additionalInfo.social.instagram && (
-                                                            <span className="text-xs text-slate-400">📷 @{additionalInfo.social.instagram}</span>
+                                                            <span className="text-xs text-slate-400 flex items-center gap-1">
+                                                                <FaInstagram className="text-pink-500" /> @{additionalInfo.social.instagram}
+                                                            </span>
                                                         )}
                                                         {additionalInfo.social.twitter && (
-                                                            <span className="text-xs text-slate-400">🐦 @{additionalInfo.social.twitter}</span>
+                                                            <span className="text-xs text-slate-400 flex items-center gap-1">
+                                                                <FaTwitter className="text-blue-500" /> @{additionalInfo.social.twitter}
+                                                            </span>
                                                         )}
                                                     </div>
                                                 )}

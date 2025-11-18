@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
+import { FaPhone, FaWhatsapp } from 'react-icons/fa';
 
 export function Chat() {
     const { isAuthenticated } = useAuth();
@@ -189,7 +190,7 @@ export function Chat() {
                                                                 )}
                                                                 className="inline-flex items-center gap-2 text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 font-mono text-sm underline transition-colors"
                                                             >
-                                                                <span>📱</span>
+                                                                <FaPhone className="text-green-500" />
                                                                 {formatPhoneNumber(match.other_user.profile.phone_number)}
                                                             </button>
                                                         </div>
@@ -205,7 +206,7 @@ export function Chat() {
                                                         )}
                                                         className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors font-medium"
                                                     >
-                                                        <span>💬</span>
+                                                        <FaWhatsapp />
                                                         Chatear en WhatsApp
                                                     </button>
                                                 </div>
