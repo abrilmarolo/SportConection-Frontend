@@ -97,6 +97,29 @@ export function AuthProvider({ children }) {
     }
   };
 
+  // Función para autenticar con token existente (para registro completado)
+  const authenticateWithToken = async (token, userData) => {
+    try {
+      setLoading(true);
+      setAuthError(null);
+
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(userData));
+
+      setUser(userData);
+      setIsAuthenticated(true);
+
+      navigate('/');
+      return { token, user: userData };
+    } catch (error) {
+      console.error('Token authentication error:', error.message);
+      setAuthError(error.message || 'Error en la autenticación');
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const googleLogin = async (token) => {
     try {
       setLoading(true);
@@ -206,7 +229,8 @@ export function AuthProvider({ children }) {
     getMyProfile,
     register,         
     completeProfile, 
-    deleteProfile
+    deleteProfile,
+    authenticateWithToken
   };
 
   return (

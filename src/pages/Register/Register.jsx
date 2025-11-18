@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { FaEye, FaEyeSlash, FaGoogle } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+import { authService } from '../../services/authService';
+import { useAuth } from '../../context/AuthContext';
 
 export function Register() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -11,6 +14,8 @@ export function Register() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -24,24 +29,74 @@ export function Register() {
     }
   };
 
-  const handleNext = (e) => {
+  const handleNext = async (e) => {
     e.preventDefault();
+    setError('');
+
+    // Validaciones
     if (formData.password !== confirmPassword) {
-      alert('Las contraseñas no coinciden');
+      setError('Las contraseñas no coinciden');
       return;
     }
-    console.log('Datos para enviar al backend:', formData);
-    navigate('/RegistroTipoDeUsuario');
+
+    if (formData.password.length < 6) {
+      setError('La contraseña debe tener al menos 6 caracteres');
+      return;
+    }
+
+    if (!formData.email || !formData.password) {
+      setError('Por favor, completa todos los campos');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      // Llamar al servicio de registro
+      const response = await authService.register({
+        email: formData.email,
+        password: formData.password
+      });
+
+      console.log('Registro exitoso:', response);
+
+      // Si el registro es exitoso, guardar datos temporalmente y navegar
+      // Guardar los datos en sessionStorage para usar en la siguiente pantalla
+      sessionStorage.setItem('registrationData', JSON.stringify({
+        email: formData.email,
+        password: formData.password,
+        token: response.token,
+        userId: response.userId || response.user_id
+      }));
+
+      // Navegar a la pantalla de selección de perfil
+      navigate('/RegistroTipoDeUsuario');
+
+    } catch (error) {
+      console.error('Error en registro:', error);
+      setError(error.message || 'Error al registrar usuario');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGoogleLogin = () => {
-    console.log('Google login');
+    console.log('Google login - Por implementar');
+    // TODO: Implementar Google OAuth
+    setError('Funcionalidad de Google por implementar');
   };
 
   return (
     <section className='m-10'>
       <div className="max-w-md mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
         <h2 className="text-2xl text-center font-bold mb-6 text-gray-800 dark:text-white">Crear Cuenta</h2>
+        
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleNext} className="space-y-4 ">
           <div>
             <label htmlFor="email" className="block text-gray-700 dark:text-gray-200 mb-2">Email</label>
@@ -107,9 +162,10 @@ export function Register() {
 
           <button
             type="submit"
-            className="w-full py-2 bg-blue-500 text-white rounded-3xl hover:bg-blue-700 "
+            disabled={loading}
+            className="w-full py-2 bg-blue-500 text-white rounded-3xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Siguiente
+            {loading ? 'Registrando...' : 'Siguiente'}
           </button>
 
           <div className="text-center mt-4">

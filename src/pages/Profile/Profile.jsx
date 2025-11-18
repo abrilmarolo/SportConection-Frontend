@@ -13,6 +13,8 @@ export function Profile() {
       
       try {
         const data = await getMyProfile();
+        console.log('Profile data loaded:', data);
+        console.log('User data from auth:', user);
         setProfileData(data);
       } catch (error) {
         console.error('Error fetching profile:', error);
@@ -72,7 +74,7 @@ export function Profile() {
                 Tipo de Usuario
               </h3>
               <p className="mt-1 text-gray-900 dark:text-white capitalize">
-                {user?.role || '-'}
+                {user?.profile_type || profileData?.profileType || user?.role || '-'}
               </p>
             </div>
           </div>
