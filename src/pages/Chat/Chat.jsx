@@ -48,7 +48,7 @@ export function Chat() {
         const cleanPhone = phoneNumber.replace(/\D/g, '');
         
         // Mensaje personalizado
-        const message = `¡Hola ${userName}! Nos conectamos a través de Sport Connection. Me gustaría hablar contigo.`;
+        const message = `¡Hola ${userName}! Nos conectamos a través de Sport Connection. Me gustaría hablar contigo sobre deportes.`;
         
         const encodedMessage = encodeURIComponent(message);
         const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
@@ -138,19 +138,21 @@ export function Chat() {
                                                     {match.other_user.profile?.photo_url ? (
                                                         <img 
                                                             src={match.other_user.profile.photo_url} 
-                                                            alt={match.other_user.name}
+                                                            alt={match.other_user.profile?.name || 'Usuario'}
                                                             className="w-full h-full object-cover"
                                                         />
                                                     ) : (
                                                         <span className="text-2xl font-bold">
-                                                            {match.other_user.name ? 
-                                                                match.other_user.name.charAt(0).toUpperCase() : '?'}
+                                                            {match.other_user.profile?.name ? 
+                                                                match.other_user.profile.name.charAt(0).toUpperCase() : '?'}
                                                         </span>
                                                     )}
                                                 </div>
                                                 <div className="flex-1">
                                                     <h3 className="font-semibold text-lg">
-                                                        {match.other_user.name || 'Usuario'}
+                                                        {match.other_user.profile?.name && match.other_user.profile?.last_name 
+                                                            ? `${match.other_user.profile.name} ${match.other_user.profile.last_name}`
+                                                            : match.other_user.profile?.name || 'Usuario'}
                                                     </h3>
                                                     <p className="text-sm text-gray-500 dark:text-gray-400 capitalize">
                                                         {match.other_user.profile_type}
@@ -173,20 +175,22 @@ export function Chat() {
                                             </div>
 
                                             {/* Número de teléfono como link clickeable */}
-                                            {match.other_user.phone_number ? (
+                                            {match.other_user.profile?.phone_number ? (
                                                 <div className="space-y-2">
                                                     <div className="text-sm">
                                                         <span className="font-medium text-gray-600 dark:text-gray-300">Teléfono:</span>
                                                         <div className="mt-1">
                                                             <button
                                                                 onClick={() => openWhatsApp(
-                                                                    match.other_user.phone_number, 
-                                                                    match.other_user.name
+                                                                    match.other_user.profile.phone_number, 
+                                                                    match.other_user.profile?.name && match.other_user.profile?.last_name 
+                                                                        ? `${match.other_user.profile.name} ${match.other_user.profile.last_name}`
+                                                                        : match.other_user.profile?.name || 'Usuario'
                                                                 )}
                                                                 className="inline-flex items-center gap-2 text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 font-mono text-sm underline transition-colors"
                                                             >
                                                                 <span>📱</span>
-                                                                {formatPhoneNumber(match.other_user.phone_number)}
+                                                                {formatPhoneNumber(match.other_user.profile.phone_number)}
                                                             </button>
                                                         </div>
                                                     </div>
@@ -194,8 +198,10 @@ export function Chat() {
                                                     {/* Botón principal de WhatsApp */}
                                                     <button
                                                         onClick={() => openWhatsApp(
-                                                            match.other_user.phone_number, 
-                                                            match.other_user.name
+                                                            match.other_user.profile.phone_number, 
+                                                            match.other_user.profile?.name && match.other_user.profile?.last_name 
+                                                                ? `${match.other_user.profile.name} ${match.other_user.profile.last_name}`
+                                                                : match.other_user.profile?.name || 'Usuario'
                                                         )}
                                                         className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors font-medium"
                                                     >

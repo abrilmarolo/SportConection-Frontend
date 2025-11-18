@@ -368,13 +368,7 @@ export function Match() {
                         <h1 className="text-2xl font-semibold">Match</h1>
                     </div>
 
-                    {/* User info */}
-                    {userProfileType && (
-                        <div className="mb-2 text-sm text-gray-600 dark:text-gray-400 text-center">
-                            Perfil: <span className="capitalize font-medium">{userProfileType}</span>
-                            {userSportId && <span> • Sport ID: {userSportId}</span>}
-                        </div>
-                    )}
+                    
 
                     {/* Filtros */}
                     {renderFilters()}
@@ -574,16 +568,7 @@ export function Match() {
                         </button>
                     </div>
 
-                    {/* Control buttons */}
-                    <div className="mt-6">
-                        <button 
-                            className="px-4 py-2 border rounded hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors disabled:opacity-50" 
-                            onClick={fetchDiscover}
-                            disabled={loading}
-                        >
-                            Recargar perfiles
-                        </button>
-                    </div>
+                   
                 </div>
             )}
         </>
