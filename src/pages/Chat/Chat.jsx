@@ -143,10 +143,12 @@ export function Chat() {
                                                             className="w-full h-full object-cover"
                                                         />
                                                     ) : (
+                                                        
                                                         <span className="text-2xl font-bold">
                                                             {match.other_user.profile?.name ? 
                                                                 match.other_user.profile.name.charAt(0).toUpperCase() : '?'}
                                                         </span>
+                                                        
                                                     )}
                                                 </div>
                                                 <div className="flex-1">

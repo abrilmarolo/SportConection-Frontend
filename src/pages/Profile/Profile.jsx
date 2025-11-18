@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useAdmin } from '../../context/AdminContext';
 import { profilePhotoService } from '../../services/profilePhotoService';
 import { FaEnvelope, FaPhone, FaInstagram, FaTwitter } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 
 export function Profile() {
   const { isAuthenticated, user, getMyProfile, loading, authError, deleteProfile } = useAuth();
@@ -13,6 +14,7 @@ export function Profile() {
   const [profileDeleting, setProfileDeleting] = useState(false);
   const [photoError, setPhotoError] = useState(null);
   const fileInputRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (isAuthenticated && !isAdmin) {
@@ -154,10 +156,9 @@ export function Profile() {
             <div className="flex flex-col items-center space-y-6">
               <div className="relative">
                 <div className="w-40 h-40 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-700 flex items-center justify-center border-4 border-orange-200 dark:border-orange-800">
-                  <div className="w-full h-full bg-gradient-to-br from-blue-400 to-green-400 rounded-full flex items-center justify-center">
-                    <span className="text-white text-4xl font-bold">A</span>
+                    <span className="text-4xl font-bold">A</span>
                   </div>
-                </div>
+                
               </div>
             </div>
 
@@ -205,7 +206,7 @@ export function Profile() {
           {/* Sección de Foto de Perfil de Usuario */}
           <div className="flex flex-col items-center space-y-6">
             <div className="relative">
-              <div className="w-40 h-40 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-700 flex items-center justify-center border-4 border-orange-200">
+              <div className="w-40 h-40 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-700 flex items-center justify-center border-4 border-gray-200">
                 {profileData?.profile?.photo_url ? (
                   <img 
                     src={profileData.profile.photo_url} 
@@ -213,11 +214,11 @@ export function Profile() {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-blue-400 to-green-400 rounded-full flex items-center justify-center">
-                    <span className="text-white text-4xl font-bold">
+                   
+                    <span className="text-4xl font-bold">
                       {profileData?.profile?.name?.[0]?.toUpperCase() || 'U'}
                     </span>
-                  </div>
+                    
                 )}
               </div>
               
@@ -426,7 +427,10 @@ export function Profile() {
 
           {/* Botones de acción del Usuario */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
-            <button className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-medium transition-colors">
+            <button
+              onClick={() => navigate('/EditarPerfil')}
+              className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-medium transition-colors"
+            >
               Editar Perfil
             </button>
             <button 

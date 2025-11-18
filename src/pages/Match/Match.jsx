@@ -473,13 +473,11 @@ export function Match() {
                                                     className="w-full h-full object-cover" 
                                                 />
                                             ) : (
-                                                <div className="text-slate-600 dark:text-slate-300 p-6 text-center">
-                                                    <div className="text-4xl mb-2">
-                                                        {card.profile_type === 'team' ? '🏆' : 
-                                                         card.profile_type === 'agent' ? '🤝' : '⚽'}
-                                                    </div>
-                                                    <div>{fullName}</div>
-                                                </div>
+                                               
+                                                    <span className="text-6xl font-bold">
+                                                        {card.name?.[0]?.toUpperCase() || 'U'}
+                                                    </span>
+                                                
                                             )}
                                             
                                             {/* Badge del tipo de perfil */}

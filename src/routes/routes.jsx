@@ -8,6 +8,7 @@ import { Match } from "../pages/Match/Match";
 import { Chat } from "../pages/Chat/Chat";
 import { Map } from "../pages/Map/Map";
 import { Profile } from "../pages/Profile/Profile";
+import { EditProfile } from "../pages/Profile/EditProfile";
 import { FrequentQuestions } from "../pages/FrequentQuestions/FrequentQuestions";
 import { RegisterPartTwo } from "../pages/Register/components/RegisterPartTwo";
 
@@ -24,7 +25,9 @@ export const publicRoutes = [
     { path: "/Contacto", element: <Contact />, name: "Contacto" },
 ];
 
-export const profileRoute = { path: "/Perfil", element: <Profile />, name: "Perfil" };
+export const profileRoute = { path: "/Perfil", element: <Profile />, name: "Perfil" }
+export const editProfileRoute = { path: "/EditarPerfil", element: <EditProfile />, name: "Editar Perfil" };
+  
 
 export const authRoutes = [
     { path: "/Registro", element: <Register />, name: "Registrarse"},
@@ -50,4 +53,4 @@ export const adminCreateRoutes = [
 ];
 export const registerPartTwoRoute = { path: "/RegistroTipoDeUsuario", element: <RegisterPartTwo />, name: "Registro Parte Dos" };
 
-export const routes = [...publicRoutes, ...authRoutes, ...userRoutes, ...adminRoutes, profileRoute, registerPartTwoRoute, ...adminCreateRoutes];
+export const routes = [...publicRoutes, ...authRoutes, ...userRoutes, ...adminRoutes, profileRoute, editProfileRoute, registerPartTwoRoute, ...adminCreateRoutes];

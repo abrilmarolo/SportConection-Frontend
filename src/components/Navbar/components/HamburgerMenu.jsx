@@ -75,11 +75,11 @@ export function HamburgerMenu({ isOpen, setIsOpen }) {
                   }}
                 />
               ) : (
-                <div className="w-full h-full bg-gradient-to-br from-blue-400 to-green-400 rounded-full flex items-center justify-center">
-                  <span className="text-white text-lg font-bold">
+                
+                  <span className="text-lg font-bold">
                     {isAdmin ? 'A' : (profileData?.profile?.name?.[0]?.toUpperCase() || 'U')}
                   </span>
-                </div>
+                
               )}
             </div>
           </Link>

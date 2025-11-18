@@ -2,13 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { routes } from '../../../routes/routes';
 import { useAuth } from '../../../context/AuthContext';
-import { useAdmin } from '../../../context/AdminContext';
 import { profileRoute } from '../../../routes/routes';
 import api from '../../../services/api';
 
 export function UserButtons({ user }) {
   const { logout } = useAuth();
-  const { isAdmin } = useAdmin();
   const [profilePhoto, setProfilePhoto] = useState(null);
   const [profileType, setProfileType] = useState(null);
   const [profileData, setProfileData] = useState(null);
@@ -26,10 +24,10 @@ export function UserButtons({ user }) {
       }
     };
 
-    if (user && !isAdmin) {
+    if (user) {
       loadInitialPhoto();
     }
-  }, [user?.id, isAdmin]); // Depende del ID del usuario y si es admin
+  }, [user?.id]); // Solo depende del ID del usuario
 
   // Escuchar eventos personalizados para actualizar la foto
   useEffect(() => {
@@ -71,11 +69,11 @@ export function UserButtons({ user }) {
               }}
             />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-blue-400 to-green-400 rounded-full flex items-center justify-center">
-              <span className="text-white text-lg font-bold">
-                {isAdmin ? 'A' : (profileData?.profile?.name?.[0]?.toUpperCase() || 'U')}
+           
+              <span className="text-lg font-bold">
+                {profileData?.profile?.name?.[0]?.toUpperCase() || 'U'}
               </span>
-            </div>
+            
           )}
         </div>
       </Link>
