@@ -26,14 +26,16 @@ export function UserButtons({ user }) {
       }
     };
 
-    if (user) {
+    if (user && !isAdmin) {
       loadInitialPhoto();
     }
-  }, [user?.id]); // Solo depende del ID del usuario
+  }, [user?.id, isAdmin]); // Solo depende del ID del usuario y si es admin
 
   // Escuchar eventos personalizados para actualizar la foto
   useEffect(() => {
     const handleProfileUpdate = async () => {
+      if (isAdmin) return; // No cargar perfil para admins
+      
       try {
         const response = await api.get('/profile/me');
         setProfilePhoto(response.data.profile?.photo_url);
@@ -49,7 +51,7 @@ export function UserButtons({ user }) {
     return () => {
       window.removeEventListener('profilePhotoUpdated', handleProfileUpdate);
     };
-  }, []);
+  }, [isAdmin]);
 
 
   return (
