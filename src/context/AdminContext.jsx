@@ -214,7 +214,42 @@ export function AdminProvider({ children }) {
     }
   };
 
+  const updateLocation = async (id, updates) => {
+    if (!isAdmin) return;
+    try {
+      setLoading(true);
+      const updatedLocation = await adminService.updateLocation(id, updates);
+      setAdminData(prev => ({
+        ...prev,
+        locations: prev.locations.map(location => 
+          location.id === id ? updatedLocation : location
+        )
+      }));
+      return updatedLocation;
+    } catch (error) {
+      setError(error.message);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  const deleteLocation = async (id) => {
+    if (!isAdmin) return;
+    try {
+      setLoading(true);
+      await adminService.deleteLocation(id);
+      setAdminData(prev => ({
+        ...prev,
+        locations: prev.locations.filter(location => location.id !== id)
+      }));
+    } catch (error) {
+      setError(error.message);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const clearError = () => setError(null);
 
@@ -231,6 +266,8 @@ export function AdminProvider({ children }) {
     deleteSport,
     getAllLocations,
     createLocation,
+    updateLocation,
+    deleteLocation,
     createUser,
     updateUser,
     deleteUser,

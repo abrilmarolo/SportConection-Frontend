@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { routes } from '../../../routes/routes';
+import { useAdmin } from '../../../context/AdminContext';
 import { useAuth } from '../../../context/AuthContext';
 import { profileRoute } from '../../../routes/routes';
 import api from '../../../services/api';
 
 export function UserButtons({ user }) {
   const { logout } = useAuth();
+  const { isAdmin } = useAdmin();
   const [profilePhoto, setProfilePhoto] = useState(null);
   const [profileType, setProfileType] = useState(null);
   const [profileData, setProfileData] = useState(null);
@@ -71,7 +73,7 @@ export function UserButtons({ user }) {
           ) : (
            
               <span className="text-lg font-bold">
-                {profileData?.profile?.name?.[0]?.toUpperCase() || 'U'}
+                {isAdmin ? 'A' : (profileData?.profile?.name?.[0]?.toUpperCase() || 'U')}
               </span>
             
           )}
