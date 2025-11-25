@@ -73,7 +73,7 @@ export function CreateSport() {
             <div className="flex justify-end space-x-4">
               <button
                 type="button"
-                onClick={() => navigate('/admin/deportes')}
+                onClick={() => navigate('/Deportes')}
                 className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
               >
                 Cancelar
