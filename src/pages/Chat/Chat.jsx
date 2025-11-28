@@ -1,13 +1,17 @@
 import React, { useEffect, useState } from 'react'
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
-import { FaPhone, FaWhatsapp } from 'react-icons/fa';
+import { FaPhone, FaWhatsapp, FaInstagram, FaTwitter, FaTimes, FaMapMarkerAlt, FaCalendarAlt, FaRuler, FaWeight, FaBriefcase } from 'react-icons/fa';
+import Modal from '../../components/Modal/Modal';
 
 export function Chat() {
     const { isAuthenticated } = useAuth();
     const [matches, setMatches] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [selectedProfile, setSelectedProfile] = useState(null);
+    const [profileData, setProfileData] = useState(null);
+    const [profileLoading, setProfileLoading] = useState(false);
 
     useEffect(() => {
         if (!isAuthenticated) return;
@@ -26,7 +30,9 @@ export function Chat() {
             console.log('✅ Matches response:', response.data);
             
             if (response.data.success) {
-                setMatches(response.data.matches || []);
+                const matchesData = response.data.matches || [];
+                console.log('🔍 First match structure:', matchesData[0]);
+                setMatches(matchesData);
             }
             
         } catch (err) {
@@ -58,6 +64,54 @@ export function Chat() {
         window.open(whatsappUrl, '_blank');
     }
 
+    // Función para obtener el perfil completo
+    async function fetchUserProfile(userId) {
+        try {
+            setProfileLoading(true);
+            console.log('🔍 Fetching profile for user:', userId);
+            
+            const response = await api.get(`/profile/${userId}`);
+            console.log('✅ Profile response:', response.data);
+            
+            setProfileData(response.data);
+            
+        } catch (err) {
+            console.error('💥 Error fetching profile:', err);
+            setError('Error al cargar el perfil del usuario');
+            setTimeout(() => setError(null), 3000);
+        } finally {
+            setProfileLoading(false);
+        }
+    }
+
+    // Función para abrir el modal con perfil
+    function openProfileModal(match) {
+        console.log('🔍 Opening profile modal for match:', match);
+        console.log('🔍 Other user data:', match.other_user);
+        
+        setSelectedProfile(match);
+        
+        // Intentar diferentes propiedades para obtener el user_id
+        const userId = match.other_user.user_id || match.other_user.id || match.other_user_id;
+        
+        console.log('🔍 Using userId:', userId);
+        
+        if (!userId) {
+            console.error('❌ No se pudo encontrar user_id en:', match.other_user);
+            setError('No se pudo obtener el ID del usuario');
+            setTimeout(() => setError(null), 3000);
+            return;
+        }
+        
+        fetchUserProfile(userId);
+    }
+
+    // Función para cerrar el modal
+    function closeProfileModal() {
+        setSelectedProfile(null);
+        setProfileData(null);
+    }
+
     // Función para formatear número de teléfono como link
     function formatPhoneNumber(phone) {
         if (!phone) return null;
@@ -76,6 +130,19 @@ export function Chat() {
         }
         
         return phone;
+    }
+
+    // Función para calcular edad
+    function calculateAge(birthdate) {
+        if (!birthdate) return null;
+        const birth = new Date(birthdate);
+        const today = new Date();
+        let age = today.getFullYear() - birth.getFullYear();
+        const monthDiff = today.getMonth() - birth.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+            age--;
+        }
+        return age;
     }
 
     return (
@@ -198,7 +265,15 @@ export function Chat() {
                                                         </div>
                                                     </div>
                                                     
-                                                    {/* Botón principal de WhatsApp */}
+                                                    {/* Botón para ver perfil completo */}
+                                                    <button
+                                                        onClick={() => openProfileModal(match)}
+                                                        className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors font-medium mb-2"
+                                                    >
+                                                        👤 Ver Perfil Completo
+                                                    </button>
+
+                                                    {/* Botón de WhatsApp */}
                                                     <button
                                                         onClick={() => openWhatsApp(
                                                             match.other_user.profile.phone_number, 
@@ -225,6 +300,208 @@ export function Chat() {
                     </div>
                 </div>
             )}
+
+            {/* Modal del perfil */}
+            <Modal isOpen={!!selectedProfile} onClose={closeProfileModal}>
+                {selectedProfile && (
+                    <>
+                        {/* Header del modal */}
+                        <div className="flex items-center justify-between mb-4 pb-4 border-b dark:border-slate-700">
+                            <h2 className="text-xl font-semibold">Perfil Completo</h2>
+                            <button
+                                onClick={closeProfileModal}
+                                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                            >
+                                <FaTimes size={20} />
+                            </button>
+                        </div>
+
+                        {/* Contenido del modal */}
+                        <div>
+                            {profileLoading ? (
+                                <div className="flex items-center justify-center py-8">
+                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                                    <span className="ml-2">Cargando perfil...</span>
+                                </div>
+                            ) : profileData ? (
+                                <div className="space-y-6">
+                                    {/* Foto y nombre principal */}
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-20 h-20 bg-gray-200 dark:bg-slate-700 rounded-full flex items-center justify-center overflow-hidden">
+                                            {profileData.profile?.photo_url ? (
+                                                <img 
+                                                    src={profileData.profile.photo_url} 
+                                                    alt={profileData.profile?.name || 'Usuario'}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full bg-gradient-to-br from-blue-400 to-green-400 flex items-center justify-center">
+                                                    <span className="text-2xl font-bold text-white">
+                                                        {profileData.profile?.name ? 
+                                                            profileData.profile.name.charAt(0).toUpperCase() : '?'}
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div>
+                                            <h3 className="text-2xl font-bold">
+                                                {profileData.profile?.name && profileData.profile?.last_name 
+                                                    ? `${profileData.profile.name} ${profileData.profile.last_name}`
+                                                    : profileData.profile?.name || 'Usuario'}
+                                            </h3>
+                                            <p className="text-lg text-gray-600 dark:text-gray-400 capitalize">
+                                                {profileData.profile_type}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Información básica */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {/* Edad */}
+                                        {profileData.profile?.birthdate && (
+                                            <div className="flex items-center gap-2">
+                                                <FaCalendarAlt className="text-blue-500" />
+                                                <span className="font-medium">Edad:</span>
+                                                <span>{calculateAge(profileData.profile.birthdate)} años</span>
+                                            </div>
+                                        )}
+
+                                        {/* Ubicación */}
+                                        {profileData.profile?.location && (
+                                            <div className="flex items-center gap-2">
+                                                <FaMapMarkerAlt className="text-red-500" />
+                                                <span className="font-medium">Ubicación:</span>
+                                                <span>{profileData.profile.location.city}, {profileData.profile.location.province}</span>
+                                            </div>
+                                        )}
+
+                                        {/* Deporte */}
+                                        {profileData.profile?.sport && (
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-orange-500">⚽</span>
+                                                <span className="font-medium">Deporte:</span>
+                                                <span>{profileData.profile.sport.name}</span>
+                                            </div>
+                                        )}
+
+                                        {/* Para atletas - altura y peso */}
+                                        {profileData.profile_type === 'athlete' && (
+                                            <>
+                                                {profileData.profile?.height && (
+                                                    <div className="flex items-center gap-2">
+                                                        <FaRuler className="text-purple-500" />
+                                                        <span className="font-medium">Altura:</span>
+                                                        <span>{profileData.profile.height} cm</span>
+                                                    </div>
+                                                )}
+                                                {profileData.profile?.weight && (
+                                                    <div className="flex items-center gap-2">
+                                                        <FaWeight className="text-green-500" />
+                                                        <span className="font-medium">Peso:</span>
+                                                        <span>{profileData.profile.weight} kg</span>
+                                                    </div>
+                                                )}
+                                            </>
+                                        )}
+
+                                        {/* Para equipos - trabajo */}
+                                        {profileData.profile_type === 'team' && profileData.profile?.job && (
+                                            <div className="flex items-center gap-2">
+                                                <FaBriefcase className="text-indigo-500" />
+                                                <span className="font-medium">Posición:</span>
+                                                <span>{profileData.profile.job}</span>
+                                            </div>
+                                        )}
+
+                                        {/* Para agentes - agencia */}
+                                        {profileData.profile_type === 'agent' && profileData.profile?.agency && (
+                                            <div className="flex items-center gap-2">
+                                                <FaBriefcase className="text-indigo-500" />
+                                                <span className="font-medium">Agencia:</span>
+                                                <span>{profileData.profile.agency}</span>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Descripción */}
+                                    {profileData.profile?.description && (
+                                        <div className="space-y-2">
+                                            <h4 className="font-semibold text-lg">Descripción</h4>
+                                            <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                                                {profileData.profile.description}
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {/* Redes sociales */}
+                                    {(profileData.profile?.ig_user || profileData.profile?.x_user) && (
+                                        <div className="space-y-3">
+                                            <h4 className="font-semibold text-lg">Redes Sociales</h4>
+                                            <div className="flex flex-wrap gap-3">
+                                                {profileData.profile?.ig_user && (
+                                                    <a
+                                                        href={`https://instagram.com/${profileData.profile.ig_user}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all"
+                                                    >
+                                                        <FaInstagram />
+                                                        @{profileData.profile.ig_user}
+                                                    </a>
+                                                )}
+                                                {profileData.profile?.x_user && (
+                                                    <a
+                                                        href={`https://twitter.com/${profileData.profile.x_user}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="flex items-center gap-2 px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all"
+                                                    >
+                                                        <FaTwitter />
+                                                        @{profileData.profile.x_user}
+                                                    </a>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Contacto */}
+                                    {profileData.profile?.phone_number && (
+                                        <div className="space-y-3">
+                                            <h4 className="font-semibold text-lg">Contacto</h4>
+                                            <div className="space-y-2">
+                                                <div className="flex items-center gap-2">
+                                                    <FaPhone className="text-green-500" />
+                                                    <span className="font-medium">Teléfono:</span>
+                                                    <span className="font-mono">{formatPhoneNumber(profileData.profile.phone_number)}</span>
+                                                </div>
+                                                <button
+                                                    onClick={() => {
+                                                        openWhatsApp(
+                                                            profileData.profile.phone_number, 
+                                                            profileData.profile?.name && profileData.profile?.last_name 
+                                                                ? `${profileData.profile.name} ${profileData.profile.last_name}`
+                                                                : profileData.profile?.name || 'Usuario'
+                                                        );
+                                                        closeProfileModal();
+                                                    }}
+                                                    className="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors font-medium"
+                                                >
+                                                    <FaWhatsapp />
+                                                    Chatear en WhatsApp
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="text-center py-8">
+                                    <p className="text-gray-500 dark:text-gray-400">No se pudo cargar el perfil</p>
+                                </div>
+                            )}
+                        </div>
+                    </>
+                )}
+            </Modal>
         </>
     );
 }
