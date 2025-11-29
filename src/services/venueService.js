@@ -1,9 +1,9 @@
- import api from './api';
+import api from './api';
 
 export const venueService = {
-  getAllVenues: async (sportId, lat, lng) => {
+  getAllVenues: async () => {
     try {
-      const response = await api.get(`/venues?sport_id=${sportId}&lat=${lat}&lng=${lng}`);
+      const response = await api.get('/venues');
       return response.data;
     } catch (error) {
       console.error('Error al obtener venues:', error);
@@ -11,13 +11,13 @@ export const venueService = {
     }
   },
 
-  getSports: async () => {
+  getVenueById: async (id) => {
     try {
-      const response = await api.get('/lookup/sports');
+      const response = await api.get(`/venues/${id}`);
       return response.data;
     } catch (error) {
-      console.error('Error al obtener deportes:', error);
-      throw new Error(error.response?.data?.message || 'Error al obtener deportes');
+      console.error('Error al obtener detalles del venue:', error);
+      throw new Error(error.response?.data?.message || 'Error al obtener detalles del venue');
     }
   }
 };

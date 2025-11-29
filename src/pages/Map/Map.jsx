@@ -1,60 +1,59 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { GoogleMap, LoadScript, Marker, InfoWindow } from '@react-google-maps/api';
+import { GoogleMap, useLoadScript, Marker, InfoWindow } from '@react-google-maps/api';
 import { venueService } from '../../services/venueService';
+import { FaSearch } from 'react-icons/fa';
 
 export function Map() {
     const { isAuthenticated } = useAuth();
     const [selectedVenue, setSelectedVenue] = useState(null);
     const [venues, setVenues] = useState([]);
-    const [selectedSport, setSelectedSport] = useState(null);
-    const [sports, setSports] = useState([]);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [mapCenter, setMapCenter] = useState(null);
 
-    const mapStyles = {
+    const mapStyles = useMemo(() => ({
         height: "70vh",
         width: "100%"
-    };
+    }), []);
 
-    const defaultCenter = {
-        lat: -34.603722, // Buenos Aires
+    const defaultCenter = useMemo(() => ({
+        lat: -34.603722,
         lng: -58.381592
+    }), []);
+
+    // Filtrar venues según búsqueda
+    const filteredVenues = useMemo(() => {
+        if (!searchQuery.trim()) return venues;
+        
+        const query = searchQuery.toLowerCase();
+        return venues.filter(venue => 
+            venue.name?.toLowerCase().includes(query) ||
+            venue.address?.toLowerCase().includes(query)
+        );
+    }, [venues, searchQuery]);
+
+    // Manejar selección desde búsqueda
+    const handleSearchSelect = (venue) => {
+        setSelectedVenue(venue);
+        setMapCenter({
+            lat: parseFloat(venue.lat),
+            lng: parseFloat(venue.lng)
+        });
     };
 
-    useEffect(() => {
-        const fetchSports = async () => {
-            try {
-                setLoading(true);
-                setError(null);
-                const data = await venueService.getSports();
-                setSports(data);
-            } catch (error) {
-                setError(error.message);
-                console.error('Error al cargar deportes:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchSports();
-    }, []);
+    const { isLoaded, loadError } = useLoadScript({
+        googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY
+    });
 
     useEffect(() => {
         const fetchVenues = async () => {
-            if (!selectedSport) {
-                setVenues([]);
-                return;
-            }
-            
             try {
                 setLoading(true);
                 setError(null);
-                const data = await venueService.getAllVenues(
-                    selectedSport,
-                    defaultCenter.lat,
-                    defaultCenter.lng
-                );
-                setVenues(data.venues || []);
+                const response = await venueService.getAllVenues();
+                setVenues(response.data || []);
             } catch (error) {
                 setError(error.message);
                 console.error('Error al cargar venues:', error);
@@ -63,109 +62,7 @@ export function Map() {
             }
         };
         fetchVenues();
-    }, [selectedSport]);
-
-    const MapContent = () => (
-        <div className="venues-map-container p-4">
-            <div className="mb-6">
-                {error && (
-                    <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-                        {error}
-                    </div>
-                )}
-
-                <div className="filters mb-4">
-                    <select 
-                        className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white disabled:opacity-50"
-                        value={selectedSport} 
-                        onChange={(e) => setSelectedSport(e.target.value)}
-                        disabled={loading}
-                    >
-                        <option value="">Todos los deportes</option>
-                        {sports.map(sport => (
-                            <option key={sport.id} value={sport.id}>
-                                {sport.name}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-
-                {loading && (
-                    <div className="text-center text-gray-600 dark:text-gray-400">
-                        Cargando...
-                    </div>
-                )}
-            </div>
-
-            <LoadScript googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}>
-                <GoogleMap
-                    mapContainerStyle={mapStyles}
-                    zoom={13}
-                    center={defaultCenter}
-                    options={{
-                        styles: [
-                            {
-                                elementType: "geometry",
-                                stylers: [{ color: "#242f3e" }]
-                            },
-                            {
-                                elementType: "labels.text.stroke",
-                                stylers: [{ color: "#242f3e" }]
-                            },
-                            {
-                                elementType: "labels.text.fill",
-                                stylers: [{ color: "#746855" }]
-                            }
-                        ]
-                    }}
-                >
-                    {venues.map(venue => (
-                        <Marker
-                            key={venue.place_id}
-                            position={{
-                                lat: venue.lat,
-                                lng: venue.lng
-                            }}
-                            onClick={() => setSelectedVenue(venue)}
-                        />
-                    ))}
-
-                    {selectedVenue && (
-                        <InfoWindow
-                            position={{
-                                lat: selectedVenue.lat,
-                                lng: selectedVenue.lng
-                            }}
-                            onCloseClick={() => setSelectedVenue(null)}
-                        >
-                            <div className="max-w-sm">
-                                <h3 className="font-bold text-lg mb-2">{selectedVenue.name}</h3>
-                                <p className="text-gray-600 mb-2">{selectedVenue.address}</p>
-                                {selectedVenue.opening_hours && (
-                                    <p className={`mb-2 ${
-                                        selectedVenue.opening_hours.open_now 
-                                            ? "text-green-600" 
-                                            : "text-red-600"
-                                    }`}>
-                                        {selectedVenue.opening_hours.open_now 
-                                            ? "Abierto" 
-                                            : "Cerrado"}
-                                    </p>
-                                )}
-                                {selectedVenue.photo_reference && (
-                                    <img
-                                        src={`https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${selectedVenue.photo_reference}&key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}`}
-                                        alt={selectedVenue.name}
-                                        className="w-full h-auto rounded-lg shadow-md"
-                                    />
-                                )}
-                            </div>
-                        </InfoWindow>
-                    )}
-                </GoogleMap>
-            </LoadScript>
-        </div>
-    );
+    }, []);
 
     return (
         <>
@@ -177,9 +74,133 @@ export function Map() {
                     </div>
                 </div>
             ) : (
-                <MapContent />
+                <div className="venues-map-container p-4">
+                    {/* Barra de búsqueda */}
+                    <div className="mb-4">
+                        <div className="relative">
+                            <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                            <input
+                                type="text"
+                                placeholder="Buscar club por nombre o dirección..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full pl-11 pr-10 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white"
+                            />
+                            {searchQuery && (
+                                <button
+                                    onClick={() => setSearchQuery('')}
+                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                                >
+                                    ✕
+                                </button>
+                            )}
+                        </div>
+
+                        {/* Resultados de búsqueda */}
+                        {searchQuery && filteredVenues.length > 0 && (
+                            <div className="mt-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                {filteredVenues.map(venue => (
+                                    <div
+                                        key={venue.id}
+                                        onClick={() => handleSearchSelect(venue)}
+                                        className="p-3 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-200 dark:border-gray-700 last:border-b-0"
+                                    >
+                                        <p className="font-semibold text-gray-900 dark:text-white">{venue.name}</p>
+                                        <p className="text-sm text-gray-600 dark:text-gray-400">{venue.address}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {searchQuery && filteredVenues.length === 0 && (
+                            <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-center text-gray-600 dark:text-gray-400">
+                                No se encontraron clubes
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="mb-6">
+                        {error && (
+                            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                                {error}
+                            </div>
+                        )}
+
+                        {loading && (
+                            <div className="text-center text-gray-600 dark:text-gray-400">
+                                Cargando clubes deportivos...
+                            </div>
+                        )}
+
+                        {!loading && venues.length > 0 && (
+                            <div className="mb-4 text-sm text-gray-600 dark:text-gray-400">
+                                Mostrando {venues.length} clubes deportivos
+                            </div>
+                        )}
+                    </div>
+
+                    {loadError ? (
+                        <div className="p-4 text-center">
+                            <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                                Error al cargar Google Maps
+                            </div>
+                        </div>
+                    ) : !isLoaded ? (
+                        <div className="p-4 text-center text-gray-600 dark:text-gray-400">
+                            Cargando mapa...
+                        </div>
+                    ) : (
+                        <GoogleMap
+                            mapContainerStyle={mapStyles}
+                            zoom={mapCenter ? 15 : 13}
+                            center={mapCenter || defaultCenter}
+                        >
+                            {venues.map(venue => (
+                                <Marker
+                                    key={venue.id}
+                                    position={{
+                                        lat: parseFloat(venue.lat),
+                                        lng: parseFloat(venue.lng)
+                                    }}
+                                    onClick={() => setSelectedVenue(venue)}
+                                />
+                            ))}
+
+                            {selectedVenue && (
+                                <InfoWindow
+                                    position={{
+                                        lat: parseFloat(selectedVenue.lat),
+                                        lng: parseFloat(selectedVenue.lng)
+                                    }}
+                                    onCloseClick={() => setSelectedVenue(null)}
+                                >
+                                    <div className="max-w-sm">
+                                        <h3 className="font-bold text-lg mb-2">{selectedVenue.name}</h3>
+                                        <p className="text-gray-600 mb-2">{selectedVenue.address}</p>
+                                        {selectedVenue.phone && (
+                                            <p className="text-gray-700 mb-2">
+                                                <strong>Teléfono:</strong> {selectedVenue.phone}
+                                            </p>
+                                        )}
+                                        {selectedVenue.website && (
+                                            <a 
+                                                href={selectedVenue.website}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-blue-600 hover:text-blue-800 underline"
+                                            >
+                                                Visitar sitio web
+                                            </a>
+                                        )}
+                                    </div>
+                                </InfoWindow>
+                            )}
+                        </GoogleMap>
+                    )}
+                </div>
             )}
         </>
     );
 }
+
 
