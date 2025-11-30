@@ -8,9 +8,10 @@ import { Match } from "../pages/Match/Match";
 import { Chat } from "../pages/Chat/Chat";
 import { Map } from "../pages/Map/Map";
 import { Profile } from "../pages/Profile/Profile";
-import { EditProfile } from "../pages/Profile/EditProfile";
+import { EditProfile } from "../pages/Profile/components/EditProfile";
 import { FrequentQuestions } from "../pages/FrequentQuestions/FrequentQuestions";
 import { RegisterPartTwo } from "../pages/Register/components/RegisterPartTwo";
+import { Subscription } from "../pages/Subscription/Subscription";
 
 import { CreateLocation } from "../pages/Admin/Location/CreateLocation";
 import { CreateSport } from "../pages/Admin/Sport/CreateSport";
@@ -39,6 +40,7 @@ export const userRoutes = [
     { path: "/Match", element: <Match />, name: "Hacer Match"},
     { path: "/Chat", element: <Chat />, name: "Chats"},
     { path: "/Mapa", element: <Map />, name: "Mapa"},
+    { path: "/Suscripcion", element: <Subscription />, name: "Suscripción"},
 ];
 
 export const adminRoutes = [

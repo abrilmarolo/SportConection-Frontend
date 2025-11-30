@@ -1,627 +1,535 @@
 import React, { useState, useEffect } from 'react'
-import { useAuth } from '../../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import api from '../../services/api';
+import { useAuth } from '../../context/AuthContext'
+import api from '../../services/api'
 
 export function Post() {
-  const { isAuthenticated, user } = useAuth();
-  const navigate = useNavigate();
-  const [posts, setPosts] = useState([]);
-  const [newPost, setNewPost] = useState({
-    content: '',
-    image: null,
-    video: null,
-    imageFile: null,
-    videoFile: null
-  });
-  const [isPosting, setIsPosting] = useState(false);
-  const [showComments, setShowComments] = useState({});
-  const [commentTexts, setCommentTexts] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [deletingPosts, setDeletingPosts] = useState(new Set());
-  const [activeTab, setActiveTab] = useState('para-ti'); // 'para-ti' o 'mis-posts'
+  const { isAuthenticated, user } = useAuth()
+  
+  // Estados
+  const [posts, setPosts] = useState([])
+  const [text, setText] = useState('')
+  const [url, setUrl] = useState('')
+  const [selectedFile, setSelectedFile] = useState(null)
+  const [filePreview, setFilePreview] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [activeTab, setActiveTab] = useState('all') // 'all' o 'my-posts'
+  const [userProfile, setUserProfile] = useState(null) // Perfil completo con photo_url
 
-  // Cargar publicaciones desde el backend
+  // Cargar perfil del usuario autenticado
   useEffect(() => {
-    if (isAuthenticated) {
-      loadPosts();
+    const loadUserProfile = async () => {
+      if (isAuthenticated) {
+        try {
+          const response = await api.get('/profile/me')
+          setUserProfile(response.data.profile)
+        } catch (err) {
+          console.error('Error al cargar perfil:', err)
+        }
+      }
     }
-  }, [isAuthenticated]);
+    loadUserProfile()
+  }, [isAuthenticated])
 
+  // Cargar publicaciones al montar y cambiar tab
+  useEffect(() => {
+    loadPosts()
+  }, [activeTab])
+
+  // Función para cargar publicaciones
   const loadPosts = async () => {
     try {
-      setLoading(true);
-      setError(null);
+      setLoading(true)
+      setError('')
       
-      const response = await api.get('/posts');
-      setPosts(response.data.posts || response.data || []);
-    } catch (error) {
-      setError('Error al cargar las publicaciones');
-      console.error('Error loading posts:', error);
-      // Mostrar datos de ejemplo en caso de error para desarrollo
-      setPosts([]);
+      if (activeTab === 'all') {
+        // GET /posts - Todas las publicaciones (público)
+        const response = await api.get('/posts')
+        const postsData = Array.isArray(response.data) ? response.data : []
+        
+        // Enriquecer cada post con el perfil del usuario (para obtener photo_url)
+        const enrichedPosts = await Promise.all(
+          postsData.map(async (post) => {
+            try {
+              // Si es mi propio post, usar mi perfil cargado
+              if (user && post.user_id === user.id && userProfile) {
+                return {
+                  ...post,
+                  user: {
+                    ...post.user,
+                    photo_url: userProfile.photo_url || null
+                  }
+                }
+              }
+              
+              // GET /profile/:userId - Obtener perfil con photo_url de otros usuarios
+              const profileResponse = await api.get(`/profile/${post.user_id}`)
+              return {
+                ...post,
+                user: {
+                  ...post.user,
+                  photo_url: profileResponse.data.profile?.photo_url || null
+                }
+              }
+            } catch (error) {
+              // Si falla, devolver el post sin modificar
+              console.error(`Error al cargar perfil del usuario ${post.user_id}:`, error)
+              return post
+            }
+          })
+        )
+        
+        setPosts(enrichedPosts)
+      } else {
+        // GET /posts/my-posts - Mis publicaciones (requiere auth)
+        const response = await api.get('/posts/my-posts')
+        setPosts(response.data.post || [])
+      }
+    } catch (err) {
+      setError('Error al cargar publicaciones')
+      console.error(err)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  const handlePostSubmit = async (e) => {
-    e.preventDefault();
-    if (!newPost.content.trim()) return;
+  // Función para manejar selección de archivo
+  const handleFileSelect = (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
 
-    setIsPosting(true);
+    // Validar tipo de archivo
+    const validImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
+    const validVideoTypes = ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime']
     
+    if (!validImageTypes.includes(file.type) && !validVideoTypes.includes(file.type)) {
+      setError('Solo se permiten imágenes (JPG, PNG, GIF, WEBP) o videos (MP4, WEBM, OGG, MOV)')
+      return
+    }
+
+    // Validar tamaño (máximo 50MB)
+    if (file.size > 50 * 1024 * 1024) {
+      setError('El archivo no debe superar 50MB')
+      return
+    }
+
+    setSelectedFile(file)
+    setError('')
+
+    // Crear preview
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      setFilePreview(reader.result)
+    }
+    reader.readAsDataURL(file)
+  }
+
+  // Función para remover archivo
+  const handleRemoveFile = () => {
+    setSelectedFile(null)
+    setFilePreview(null)
+  }
+
+  // Función para crear publicación
+  const handleCreatePost = async (e) => {
+    e.preventDefault()
+    
+    if (!text.trim()) {
+      setError('El texto es requerido')
+      return
+    }
+
     try {
-      const postData = {
-        text: newPost.content, // El backend espera 'text' no 'content'
-      };
+      setLoading(true)
+      setError('')
 
-      await api.post('/posts', postData);
-
-      // Recargar publicaciones
-      await loadPosts();
+      // Nota: El backend solo acepta URL string, no archivos
+      // Si hay archivo seleccionado, usamos el preview local como URL
+      const postUrl = selectedFile ? filePreview : (url.trim() || undefined)
+      
+      // POST /posts - Crear publicación
+      await api.post('/posts', {
+        text: text.trim(),
+        url: postUrl
+      })
       
       // Limpiar formulario
-      setNewPost({ content: '', image: null, video: null, imageFile: null, videoFile: null });
+      setText('')
+      setUrl('')
+      setSelectedFile(null)
+      setFilePreview(null)
       
-    } catch (error) {
-      setError(`Error al crear la publicación: ${error.message}`);
-      console.error('Error creating post:', error);
+      // Recargar publicaciones
+      await loadPosts()
+    } catch (err) {
+      setError('Error al crear publicación')
+      console.error(err)
     } finally {
-      setIsPosting(false);
+      setLoading(false)
     }
-  };
+  }
 
-  const toggleComments = async (postId) => {
-    setShowComments(prev => ({
-      ...prev,
-      [postId]: !prev[postId]
-    }));
-
-    // Si estamos abriendo los comentarios, cargarlos
-    if (!showComments[postId]) {
-      await loadComments(postId);
-    }
-  };
-
-  const loadComments = async (postId) => {
-    try {
-      const response = await api.get(`/posts/${postId}/comments`);
-      const data = response.data;
-      
-      // Actualizar el post con los comentarios
-      setPosts(posts.map(post => 
-        (post._id === postId || post.id === postId)
-          ? { ...post, comments: data.comments || data || [] }
-          : post
-      ));
-      
-    } catch (error) {
-      console.error('Error loading comments:', error);
-    }
-  };
-
-  const handleCommentSubmit = async (postId, e) => {
-    e.preventDefault();
-    const commentText = commentTexts[postId];
-    
-    if (!commentText?.trim()) return;
-
-    try {
-      await api.post(`/posts/${postId}/comments`, { text: commentText });
-
-      // Limpiar campo de comentario
-      setCommentTexts(prev => ({
-        ...prev,
-        [postId]: ''
-      }));
-
-      // Recargar comentarios
-      await loadComments(postId);
-      
-    } catch (error) {
-      console.error('Error adding comment:', error);
-      // Agregar comentario optimísticamente si falla la API
-      const newComment = {
-        _id: Date.now(),
-        text: commentText, // Cambiar 'content' a 'text'
-        author: {
-          _id: user?.id,
-          name: user?.name || 'Usuario',
-          username: user?.username || 'usuario'
-        },
-        createdAt: new Date()
-      };
-      
-      setPosts(posts.map(post => 
-        (post._id === postId || post.id === postId)
-          ? { ...post, comments: [...(post.comments || []), newComment] }
-          : post
-      ));
-      
-      setCommentTexts(prev => ({
-        ...prev,
-        [postId]: ''
-      }));
-    }
-  };
-
-  const handleCommentChange = (postId, value) => {
-    setCommentTexts(prev => ({
-      ...prev,
-      [postId]: value
-    }));
-  };
-
-  const handleFileUpload = (e, type) => {
-    const file = e.target.files[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setNewPost({ 
-        ...newPost, 
-        [type]: url,
-        [`${type}File`]: file
-      });
-    }
-  };
-
-  // Función para verificar si es publicación propia
-  const isOwnPost = (post) => {
-    console.log('Verificando post propio:', {
-      postUserId: post.userId,
-      postAuthorId: post.author?._id,
-      postAuthorUserId: post.author?.id,
-      postAuthorUserId2: post.author?.userId,
-      currentUserId: user?.id,
-      currentUser_id: user?._id,
-      user: user
-    });
-    
-    // Verificar múltiples posibles campos para el ID del usuario
-    const isOwn = post.userId === user?.id || 
-                  post.userId === user?._id ||
-                  post.author?._id === user?.id || 
-                  post.author?._id === user?._id ||
-                  post.author?.id === user?.id ||
-                  post.author?.id === user?._id ||
-                  post.author?.userId === user?.id ||
-                  post.author?.userId === user?._id;
-    
-    console.log('Es post propio:', isOwn);
-    return isOwn;
-  };
-
-  // Función para verificar si es comentario propio
-  const isOwnComment = (comment) => {
-    return comment.userId === user?.id || comment.author?._id === user?.id || comment.author?.id === user?.id;
-  };
-
-  // Función para formatear timestamp
-  const formatTimestamp = (timestamp) => {
-    if (!timestamp) return 'ahora';
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffMs = now - date;
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMins / 60);
-    const diffDays = Math.floor(diffHours / 24);
-
-    if (diffMins < 1) return 'ahora';
-    if (diffMins < 60) return `${diffMins}m`;
-    if (diffHours < 24) return `${diffHours}h`;
-    return `${diffDays}d`;
-  };
-
+  // Función para eliminar publicación
   const handleDeletePost = async (postId) => {
-    const post = posts.find(p => (p._id || p.id) === postId);
-    
-    if (!isOwnPost(post)) {
-      alert('No puedes eliminar este post porque no es tuyo');
-      return;
-    }
-    
-    if (!window.confirm('¿Estás seguro de que quieres eliminar esta publicación?')) {
-      return;
-    }
+    if (!window.confirm('¿Eliminar esta publicación?')) return
 
-    setDeletingPosts(prev => new Set(prev).add(postId));
-    
     try {
-      console.log('Intentando eliminar post:', postId);
-      await api.delete(`/posts/${postId}`);
-      console.log('Post eliminado exitosamente');
-
-      // Actualizar la lista de posts removiendo el eliminado
-      setPosts(posts.filter(post => (post._id || post.id) !== postId));
-      console.log('Post eliminado exitosamente');
+      setLoading(true)
+      setError('')
       
-    } catch (error) {
-      setError(`Error al eliminar la publicación: ${error.message}`);
-      console.error('Error deleting post:', error);
+      // DELETE /posts/:id
+      await api.delete(`/posts/${postId}`)
+      
+      // Recargar publicaciones
+      await loadPosts()
+    } catch (err) {
+      setError('Error al eliminar publicación')
+      console.error(err)
     } finally {
-      setDeletingPosts(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(postId);
-        return newSet;
-      });
+      setLoading(false)
     }
-  };
+  }
 
-  // Función para filtrar posts según la pestaña activa
-  const getFilteredPosts = () => {
-    if (activeTab === 'mis-posts') {
-      return posts.filter(post => isOwnPost(post));
+  // Función para formatear fecha
+  const formatDate = (dateString) => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffMs = now - date
+    const diffMins = Math.floor(diffMs / 60000)
+    const diffHours = Math.floor(diffMs / 3600000)
+    const diffDays = Math.floor(diffMs / 86400000)
+
+    if (diffMins < 1) return 'Ahora'
+    if (diffMins < 60) return `${diffMins}m`
+    if (diffHours < 24) return `${diffHours}h`
+    if (diffDays < 7) return `${diffDays}d`
+    
+    return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
+  }
+
+  // Verificar si el post es del usuario actual
+  const isOwnPost = (post) => {
+    return user && post.user_id === user.id
+  }
+
+  // Función para extraer username del email
+  const getUsernameFromEmail = (email) => {
+    if (!email) return 'Usuario'
+    return email.split('@')[0]
+  }
+
+  // Función para detectar tipo de medio desde URL
+  const getMediaType = (url) => {
+    if (!url) return null
+    
+    // Detectar base64 (imágenes y videos subidos desde el formulario)
+    if (url.startsWith('data:')) {
+      if (url.startsWith('data:image/')) return 'image'
+      if (url.startsWith('data:video/')) return 'video'
     }
-    return posts; // Para Ti - todos los posts
-  };
+    
+    const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov']
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp']
+    
+    const lowerUrl = url.toLowerCase()
+    
+    if (videoExtensions.some(ext => lowerUrl.includes(ext))) return 'video'
+    if (imageExtensions.some(ext => lowerUrl.includes(ext))) return 'image'
+    
+    // Detectar YouTube
+    if (lowerUrl.includes('youtube.com') || lowerUrl.includes('youtu.be')) return 'youtube'
+    
+    return 'link'
+  }
 
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center p-8 bg-red-700 dark:bg-red-900 rounded-lg">
-          <h2 className="text-2xl text-white font-normal">Acceso Denegado</h2>
-          <p className="mt-2 text-white">Debes iniciar sesión para ver las publicaciones</p>
-        </div>
-      </div>
-    );
+  // Función para renderizar medio
+  const renderMedia = (url) => {
+    const mediaType = getMediaType(url)
+    
+    if (mediaType === 'image') {
+      return (
+        <img 
+          src={url} 
+          alt="Contenido de publicación" 
+          className="w-full rounded-lg mt-3 max-h-96 object-cover"
+          onError={(e) => e.target.style.display = 'none'}
+        />
+      )
+    }
+    
+    if (mediaType === 'video') {
+      return (
+        <video 
+          src={url} 
+          controls 
+          className="w-full rounded-lg mt-3 max-h-96"
+          onError={(e) => e.target.style.display = 'none'}
+        />
+      )
+    }
+    
+    if (mediaType === 'youtube') {
+      const videoId = url.includes('youtu.be') 
+        ? url.split('youtu.be/')[1]?.split('?')[0]
+        : url.split('v=')[1]?.split('&')[0]
+      
+      if (videoId) {
+        return (
+          <iframe
+            className="w-full rounded-lg mt-3"
+            height="315"
+            src={`https://www.youtube.com/embed/${videoId}`}
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        )
+      }
+    }
+    
+    if (mediaType === 'link') {
+      return (
+        <a 
+          href={url} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="block mt-3 p-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+        >
+          <div className="flex items-center text-blue-600">
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+            {url}
+          </div>
+        </a>
+      )
+    }
+    
+    return null
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-2xl mx-auto">
-        {/* Header con pestañas */}
-        <div className="bg-white dark:bg-gray-800 border-b dark:border-gray-700 sticky top-0 z-10">
-          <div className="p-4">
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Publicaciones</h1>
-            
-            {/* Pestañas */}
-            <div className="flex border-b border-gray-200 dark:border-gray-600">
-              <button
-                onClick={() => setActiveTab('para-ti')}
-                className={`flex-1 py-3 px-4 text-center font-medium text-sm transition-colors ${
-                  activeTab === 'para-ti'
-                    ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400'
-                    : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
-                }`}
-              >
-                Para Ti
-              </button>
-              <button
-                onClick={() => setActiveTab('mis-posts')}
-                className={`flex-1 py-3 px-4 text-center font-medium text-sm transition-colors ${
-                  activeTab === 'mis-posts'
-                    ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400'
-                    : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
-                }`}
-              >
-                Mis Posts ({posts.filter(post => isOwnPost(post)).length})
-              </button>
-            </div>
-          </div>
+    <div className="min-h-screen bg-gray-50">
+      <div className="w-[80%] mx-auto py-8 px-4">
+        
+        {/* Header */}
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+          <h1 className="text-3xl font-bold text-gray-900">Publicaciones</h1>
+          <p className="text-gray-600 mt-1">Comparte tu actividad deportiva</p>
         </div>
 
-        {/* Error Message */}
-        {error && (
-          <div className="bg-red-100 dark:bg-red-900 border border-red-400 text-red-700 dark:text-red-200 px-4 py-3 rounded mx-4 mt-4">
-            {error}
-            <button 
-              onClick={() => setError(null)}
-              className="float-right font-bold"
-            >
-              ×
-            </button>
-          </div>
-        )}
-
-        {/* Crear Nueva Publicación - Solo en "Para Ti" */}
-        {activeTab === 'para-ti' && (
-          <div className="bg-white dark:bg-gray-800 border-b dark:border-gray-700 p-4">
-            <form onSubmit={handlePostSubmit} className="space-y-4">
-              <div className="flex space-x-3">
-                <img 
-                  src="/api/placeholder/40/40" 
-                  alt="Avatar" 
-                  className="w-10 h-10 rounded-full"
-                />
+        {/* Formulario de crear publicación */}
+        {isAuthenticated && (
+          <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <form onSubmit={handleCreatePost}>
+              <div className="flex items-start space-x-4">
+                <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center overflow-hidden">
+                  {userProfile?.photo_url ? (
+                    <img 
+                      src={userProfile.photo_url} 
+                      alt="Avatar" 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-white font-bold text-lg">
+                      {user?.email?.[0]?.toUpperCase() || 'U'}
+                    </span>
+                  )}
+                </div>
+                
                 <div className="flex-1">
                   <textarea
-                    value={newPost.content}
-                    onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
+                    value={text}
+                    onChange={(e) => setText(e.target.value)}
                     placeholder="¿Qué está pasando?"
-                    className="w-full text-xl placeholder-gray-500 dark:placeholder-gray-400 bg-transparent text-gray-900 dark:text-white resize-none border-none focus:outline-none"
+                    className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                     rows="3"
+                    maxLength="500"
                   />
                   
-                  {/* Vista previa de imagen */}
-                  {newPost.image && (
-                    <div className="mt-3 relative">
-                      <img src={newPost.image} alt="Preview" className="rounded-2xl max-h-96 w-full object-cover" />
+                  {/* Vista previa del archivo */}
+                  {filePreview && (
+                    <div className="relative mt-3 border border-gray-300 rounded-lg overflow-hidden">
+                      {selectedFile?.type.startsWith('image/') ? (
+                        <img 
+                          src={filePreview} 
+                          alt="Preview" 
+                          className="w-full max-h-96 object-contain"
+                        />
+                      ) : (
+                        <video 
+                          src={filePreview} 
+                          controls 
+                          className="w-full max-h-96"
+                        />
+                      )}
                       <button
                         type="button"
-                        onClick={() => setNewPost({ ...newPost, image: null })}
-                        className="absolute top-2 right-2 bg-gray-900 bg-opacity-75 text-white rounded-full p-1 hover:bg-opacity-90"
+                        onClick={handleRemoveFile}
+                        className="absolute top-2 right-2 bg-red-600 text-white p-2 rounded-full hover:bg-red-700 transition"
                       >
-                        ✕
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
                       </button>
                     </div>
                   )}
-
-                  {/* Vista previa de video */}
-                  {newPost.video && (
-                    <div className="mt-3 relative">
-                      <video src={newPost.video} controls className="rounded-2xl max-h-96 w-full" />
-                      <button
-                        type="button"
-                        onClick={() => setNewPost({ ...newPost, video: null })}
-                        className="absolute top-2 right-2 bg-gray-900 bg-opacity-75 text-white rounded-full p-1 hover:bg-opacity-90"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Botones de acción */}
-              <div className="flex justify-between items-center pt-3 border-t dark:border-gray-700">
-                <div className="flex space-x-4">
-                  <label className="cursor-pointer text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900 p-2 rounded-full">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
-                    </svg>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleFileUpload(e, 'image')}
-                      className="hidden"
-                    />
-                  </label>
                   
-                  <label className="cursor-pointer text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900 p-2 rounded-full">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" />
-                    </svg>
-                    <input
-                      type="file"
-                      accept="video/*"
-                      onChange={(e) => handleFileUpload(e, 'video')}
-                      className="hidden"
-                    />
-                  </label>
+                  <div className="flex items-center justify-between mt-4">
+                    <div className="flex items-center space-x-2">
+                      {/* Botón para cargar archivo */}
+                      <input
+                        type="file"
+                        id="file-upload"
+                        accept="image/*,video/*"
+                        onChange={handleFileSelect}
+                        className="hidden"
+                      />
+                      <label
+                        htmlFor="file-upload"
+                        className="cursor-pointer text-blue-600 hover:text-blue-700 transition"
+                        title="Cargar imagen o video"
+                      >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      </label>
+                      
+                      <span className="text-sm text-gray-500">
+                        {text.length}/500
+                      </span>
+                    </div>
+                    
+                    <button
+                      type="submit"
+                      disabled={loading || !text.trim()}
+                      className="bg-blue-600 text-white px-6 py-2 rounded-full font-semibold hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
+                    >
+                      {loading ? 'Publicando...' : 'Publicar'}
+                    </button>
+                  </div>
                 </div>
-
-                <button
-                  type="submit"
-                  disabled={!newPost.content.trim() || isPosting}
-                  className="bg-blue-500 text-white px-6 py-2 rounded-full font-medium hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isPosting ? 'Publicando...' : 'Publicar'}
-                </button>
               </div>
             </form>
           </div>
         )}
 
-        {/* Loading State */}
-        {loading && (
-          <div className="flex justify-center items-center p-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-            <span className="ml-2 text-gray-600 dark:text-gray-400">Cargando publicaciones...</span>
+        {/* Tabs */}
+        <div className="bg-white rounded-t-lg shadow-sm border-b">
+          <div className="flex">
+            <button
+              onClick={() => setActiveTab('all')}
+              className={`flex-1 py-4 px-6 font-semibold transition ${
+                activeTab === 'all'
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-gray-600 hover:bg-gray-50'
+              }`}
+            >
+              Todas las publicaciones
+            </button>
+            
+            {isAuthenticated && (
+              <button
+                onClick={() => setActiveTab('my-posts')}
+                className={`flex-1 py-4 px-6 font-semibold transition ${
+                  activeTab === 'my-posts'
+                    ? 'text-blue-600 border-b-2 border-blue-600'
+                    : 'text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                Mis publicaciones
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Mensajes de error */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+            {error}
           </div>
         )}
 
-        {/* Feed de Publicaciones Filtradas */}
-        <div className="space-y-0">
-          {getFilteredPosts().length === 0 && !loading ? (
-            <div className="bg-white dark:bg-gray-800 p-8 text-center">
-              <div className="text-gray-500 dark:text-gray-400">
-                {activeTab === 'mis-posts' ? (
-                  <>
-                    <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No tienes publicaciones aún</h3>
-                    <p className="text-gray-600 dark:text-gray-400">¡Crea tu primera publicación para compartir con la comunidad!</p>
-                  </>
-                ) : (
-                  <>
-                    <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No hay publicaciones disponibles</h3>
-                    <p className="text-gray-600 dark:text-gray-400">Sé el primero en compartir algo con la comunidad.</p>
-                  </>
-                )}
-              </div>
+        {/* Lista de publicaciones */}
+        <div className="bg-white rounded-b-lg shadow-sm">
+          {loading && posts.length === 0 ? (
+            <div className="p-8 text-center text-gray-500">
+              Cargando publicaciones...
+            </div>
+          ) : posts.length === 0 ? (
+            <div className="p-8 text-center text-gray-500">
+              {activeTab === 'my-posts' 
+                ? 'No tienes publicaciones aún' 
+                : 'No hay publicaciones disponibles'}
             </div>
           ) : (
-            getFilteredPosts().map((post) => {
-              const postId = post._id || post.id;
-              const postUser = post.author || post.user;
-              const postComments = post.comments || [];
-
-              return (
-                <div key={postId} className="bg-white dark:bg-gray-800 border-b dark:border-gray-700 transition-colors">
-                  <div className="p-4">
-                    <div className="flex space-x-3">
-                      <img 
-                        src={postUser?.avatar || postUser?.profileImage || '/api/placeholder/40/40'} 
-                        alt={postUser?.name || postUser?.username}
-                        className="w-10 h-10 rounded-full"
-                      />
-                      <div className="flex-1">
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-center space-x-2 flex-wrap">
-                            <h3 className="font-medium text-gray-900 dark:text-white">
-                              {postUser?.name || postUser?.username || 'Usuario'}
-                            </h3>
-                            <span className="text-gray-500 dark:text-gray-400">
-                              @{postUser?.username || 'usuario'}
-                            </span>
-                            {isOwnPost(post) && (
-                              <span className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs px-2 py-1 rounded-full font-medium">
-                                Tú
-                              </span>
-                            )}
-                            <span className="text-gray-500 dark:text-gray-400">·</span>
-                            <span className="text-gray-500 dark:text-gray-400">
-                              {formatTimestamp(post.createdAt || post.timestamp)}
-                            </span>
-                          </div>
-                          
-                          {/* Botón de eliminar con icono de tacho - Solo para posts propios */}
-                          {isOwnPost(post) && (
-                            <button
-                              onClick={() => handleDeletePost(postId)}
-                              disabled={deletingPosts.has(postId)}
-                              className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 p-2 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 ml-2"
-                              title="Eliminar publicación"
-                            >
-                              {deletingPosts.has(postId) ? (
-                                <div className="w-5 h-5 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
-                              ) : (
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                              )}
-                            </button>
-                          )}
-                        </div>
-                        
-                        <p className="mt-2 text-gray-900 dark:text-white">{post.text || post.content}</p>
-                        
-                        {/* Vista previa de imagen */}
-                        {post.image && (
-                          <img 
-                            src={post.image} 
-                            alt="Post content"
-                            className="mt-3 rounded-2xl max-h-96 w-full object-cover"
-                          />
-                        )}
-
-                        {/* Vista previa de video */}
-                        {post.video && (
-                          <video 
-                            src={post.video} 
-                            controls
-                            className="mt-3 rounded-2xl max-h-96 w-full"
-                          />
-                        )}
-
-                        {/* Botones de interacción - Solo comentarios */}
-                        <div className="flex mt-4 text-gray-500 dark:text-gray-400">
-                          <button 
-                            onClick={() => toggleComments(postId)}
-                            className="flex items-center space-x-2 hover:text-blue-500 group"
-                          >
-                            <div className="p-2 rounded-full group-hover:bg-blue-50 dark:group-hover:bg-blue-900">
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                              </svg>
-                            </div>
-                            <span>{postComments.length} comentarios</span>
-                          </button>
+            <div className="divide-y divide-gray-200">
+              {posts.map((post) => (
+                <div key={post.id} className="p-6">
+                  <div className="flex items-start space-x-4">
+                    {/* Avatar */}
+                    <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center overflow-hidden">
+                      {(post.user?.photo_url || (activeTab === 'my-posts' && userProfile?.photo_url)) ? (
+                        <img 
+                          src={post.user?.photo_url || userProfile?.photo_url} 
+                          alt="Avatar" 
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-white font-bold text-lg">
+                          {getUsernameFromEmail(post.user?.email || (activeTab === 'my-posts' ? user?.email : null))?.[0]?.toUpperCase() || 'U'}
+                        </span>
+                      )}
+                    </div>                    {/* Contenido */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-gray-900 font-semibold">
+                            @{getUsernameFromEmail(post.user?.email || (activeTab === 'my-posts' ? user?.email : null))}
+                          </p>
+                          <p className="text-gray-500 text-sm">
+                            {formatDate(post.created_at)}
+                          </p>
                         </div>
                       </div>
+                      
+                      {/* Texto de la publicación */}
+                      <p className="text-gray-800 mt-3 whitespace-pre-wrap break-words">
+                        {post.text}
+                      </p>
+                      
+                      {/* Media (imagen/video/link) */}
+                      {post.url && renderMedia(post.url)}
                     </div>
+                    
+                    {/* Botón eliminar al lado derecho */}
+                    {isOwnPost(post) && (
+                      <button
+                        onClick={() => handleDeletePost(post.id)}
+                        disabled={loading}
+                        className="flex-shrink-0 text-red-600 hover:text-red-800 disabled:text-gray-400 p-2 transition"
+                        title="Eliminar publicación"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    )}
                   </div>
-
-                  {/* Sección de Comentarios */}
-                  {showComments[postId] && (
-                    <div className="border-t dark:border-gray-700">
-                      {/* Formulario para nuevo comentario */}
-                      <div className="p-4 border-b dark:border-gray-700">
-                        <form onSubmit={(e) => handleCommentSubmit(postId, e)} className="flex space-x-3">
-                          <img 
-                            src={user?.avatar || user?.profileImage || '/api/placeholder/32/32'} 
-                            alt="Tu avatar"
-                            className="w-8 h-8 rounded-full"
-                          />
-                          <div className="flex-1">
-                            <textarea
-                              value={commentTexts[postId] || ''}
-                              onChange={(e) => handleCommentChange(postId, e.target.value)}
-                              placeholder="Escribe un comentario..."
-                              className="w-full text-sm placeholder-gray-500 dark:placeholder-gray-400 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white resize-none border border-gray-300 dark:border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              rows="2"
-                            />
-                            <div className="mt-2 flex justify-end">
-                              <button
-                                type="submit"
-                                disabled={!commentTexts[postId]?.trim()}
-                                className="bg-blue-500 text-white px-4 py-1 rounded-full text-sm font-medium hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                              >
-                                Comentar
-                              </button>
-                            </div>
-                          </div>
-                        </form>
-                      </div>
-
-                      {/* Lista de comentarios */}
-                      <div className="max-h-96 overflow-y-auto">
-                        {postComments.map((comment) => {
-                          const commentUser = comment.author || comment.user;
-                          return (
-                            <div key={comment._id || comment.id} className="p-4 border-b dark:border-gray-700 last:border-b-0">
-                              <div className="flex space-x-3">
-                                <img 
-                                  src={commentUser?.avatar || commentUser?.profileImage || '/api/placeholder/32/32'} 
-                                  alt={commentUser?.name || commentUser?.username}
-                                  className="w-8 h-8 rounded-full"
-                                />
-                                <div className="flex-1">
-                                  <div className="flex items-center space-x-2">
-                                    <h4 className="font-medium text-sm text-gray-900 dark:text-white">
-                                      {commentUser?.name || commentUser?.username || 'Usuario'}
-                                    </h4>
-                                    <span className="text-gray-500 dark:text-gray-400 text-sm">
-                                      @{commentUser?.username || 'usuario'}
-                                    </span>
-                                    {isOwnComment(comment) && (
-                                      <span className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs px-1.5 py-0.5 rounded-full font-medium">
-                                        Tú
-                                      </span>
-                                    )}
-                                    {isOwnPost(post) && (comment.author?._id === post.author?._id || comment.userId === post.userId) && (
-                                      <span className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-xs px-1.5 py-0.5 rounded-full font-medium">
-                                        Autor
-                                      </span>
-                                    )}
-                                    <span className="text-gray-500 dark:text-gray-400 text-sm">·</span>
-                                    <span className="text-gray-500 dark:text-gray-400 text-sm">
-                                      {formatTimestamp(comment.createdAt || comment.timestamp)}
-                                    </span>
-                                  </div>
-                                  <p className="mt-1 text-sm text-gray-900 dark:text-white">{comment.text || comment.content}</p>
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
-                        
-                        {/* Mensaje cuando no hay comentarios */}
-                        {postComments.length === 0 && (
-                          <div className="p-4 text-center text-gray-500 dark:text-gray-400">
-                            <p className="text-sm">No hay comentarios aún.</p>
-                            <p className="text-xs mt-1">
-                              {isOwnPost(post) 
-                                ? "Sé el primero en comentar tu publicación" 
-                                : "Sé el primero en comentar"
-                              }
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
                 </div>
-              );
-            })
+              ))}
+            </div>
           )}
         </div>
+
+        {/* Info de no autenticado */}
+        {!isAuthenticated && (
+          <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg mt-6">
+            <p className="font-semibold">Inicia sesión para publicar</p>
+            <p className="text-sm mt-1">Regístrate para compartir tus momentos deportivos</p>
+          </div>
+        )}
       </div>
     </div>
-  );
+  )
 }

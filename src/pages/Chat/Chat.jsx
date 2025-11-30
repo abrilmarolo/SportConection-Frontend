@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useAuth } from '../../context/AuthContext';
-import api from '../../services/api';
-import { FaPhone, FaWhatsapp, FaInstagram, FaTwitter, FaTimes, FaMapMarkerAlt, FaCalendarAlt, FaRuler, FaWeight, FaBriefcase } from 'react-icons/fa';
+import { chatService } from '../../services/chatService';
+import { FaPhone, FaWhatsapp, FaInstagram, FaTwitter, FaTimes} from 'react-icons/fa';
 import Modal from '../../components/Modal/Modal';
 
 export function Chat() {
@@ -23,14 +23,12 @@ export function Chat() {
             setLoading(true);
             setError(null);
             
-            console.log('🤝 Fetching user matches for chat');
+            const data = await chatService.getMatches();
             
-            const response = await api.get('/swipe/matches');
+            console.log('✅ Matches response:', data);
             
-            console.log('✅ Matches response:', response.data);
-            
-            if (response.data.success) {
-                const matchesData = response.data.matches || [];
+            if (data.success) {
+                const matchesData = data.matches || [];
                 console.log('🔍 First match structure:', matchesData[0]);
                 setMatches(matchesData);
             }
@@ -65,15 +63,16 @@ export function Chat() {
     }
 
     // Función para obtener el perfil completo
-    async function fetchUserProfile(userId) {
+    async function fetchUserProfile(userId, profileType) {
         try {
             setProfileLoading(true);
             console.log('🔍 Fetching profile for user:', userId);
             
-            const response = await api.get(`/profile/${userId}`);
-            console.log('✅ Profile response:', response.data);
+            const profile = await chatService.getUserProfile(userId);
+            console.log('✅ Profile response:', profile);
             
-            setProfileData(response.data);
+            // Agregar el profile_type al objeto profileData
+            setProfileData({ profile, profile_type: profileType });
             
         } catch (err) {
             console.error('💥 Error fetching profile:', err);
@@ -103,7 +102,8 @@ export function Chat() {
             return;
         }
         
-        fetchUserProfile(userId);
+        // Guardar el profile_type del match para usarlo en el modal
+        fetchUserProfile(userId, match.other_user.profile_type);
     }
 
     // Función para cerrar el modal
@@ -156,7 +156,7 @@ export function Chat() {
                 </div>
             ) : (
                 <div className="min-h-screen p-4 dark:text-white">
-                    <div className="max-w-4xl mx-auto">
+                    <div className="w-[80%] mx-auto">
                         <div className="flex items-center justify-between mb-6">
                             <h1 className="text-2xl font-semibold">Mis Matches</h1>
                             <button 
@@ -196,7 +196,7 @@ export function Chat() {
                                 </p>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                 {matches.map((match) => (
                                     <div key={match.match_id} className="bg-white dark:bg-slate-800 rounded-lg shadow-lg overflow-hidden">
                                         {/* Header con foto y nombre */}
@@ -225,7 +225,9 @@ export function Chat() {
                                                             : match.other_user.profile?.name || 'Usuario'}
                                                     </h3>
                                                     <p className="text-sm text-gray-500 dark:text-gray-400 capitalize">
-                                                        {match.other_user.profile_type}
+                                                        {match.other_user.profile_type === 'athlete' ? 'Atleta' : 
+                                                         match.other_user.profile_type === 'agent' ? 'Representante' : 
+                                                         match.other_user.profile_type === 'team' ? 'Equipo' : 'Usuario'}
                                                     </p>
                                                 </div>
                                             </div>
@@ -473,27 +475,6 @@ export function Chat() {
                                         </div>
                                     </div>
                                 </div>
-
-                                {/* Botón de WhatsApp */}
-                                {profileData.profile?.phone_number && (
-                                    <div className="flex justify-center pt-2">
-                                        <button
-                                            onClick={() => {
-                                                openWhatsApp(
-                                                    profileData.profile.phone_number, 
-                                                    profileData.profile?.name && profileData.profile?.last_name 
-                                                        ? `${profileData.profile.name} ${profileData.profile.last_name}`
-                                                        : profileData.profile?.name || 'Usuario'
-                                                );
-                                                closeProfileModal();
-                                            }}
-                                            className="px-8 py-3 bg-green-500 hover:bg-green-600 text-white rounded-full font-medium transition-colors flex items-center gap-2"
-                                        >
-                                            <FaWhatsapp size={20} />
-                                            Chatear en WhatsApp
-                                        </button>
-                                    </div>
-                                )}
                             </div>
                         ) : (
                             <div className="text-center py-8">

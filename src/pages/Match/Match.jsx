@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useAuth } from '../../context/AuthContext';
-import api from '../../services/api';
+import { matchService } from '../../services/matchService';
 import { FaInstagram, FaTwitter } from 'react-icons/fa';
 
 export function Match() {
@@ -38,21 +38,21 @@ export function Match() {
             
             console.log('🔍 Fetching discover with params:', params);
             
-            const response = await api.get('/swipe/discover', { params });
+            const data = await matchService.getDiscover(params);
             
-            console.log('✅ Discover response:', response.data);
+            console.log('✅ Discover response:', data);
             
-            if (!response.data.success) {
-                throw new Error(response.data.error || 'Error desconocido del servidor');
+            if (!data.success) {
+                throw new Error(data.error || 'Error desconocido del servidor');
             }
             
-            setCards(response.data.users || []);
-            setUserProfileType(response.data.user_profile_type);
-            setUserSportId(response.data.user_sport_id);
+            setCards(data.users || []);
+            setUserProfileType(data.user_profile_type);
+            setUserSportId(data.user_sport_id);
             
             // Determinar tipos disponibles según el tipo de perfil del usuario
             // Según la API: Athletes ven teams y agents, Teams/Agents ven athletes
-            if (response.data.user_profile_type === 'athlete') {
+            if (data.user_profile_type === 'athlete') {
                 setAvailableTypes(['team', 'agent']);
             } else {
                 setAvailableTypes(['athlete']);
@@ -129,21 +129,18 @@ export function Match() {
         try {
             console.log(`🎯 Sending swipe: ${action} for user ${swipedUserId}`);
             
-            const response = await api.post('/swipe', {
-                swiped_user_id: swipedUserId,
-                action
-            });
+            const data = await matchService.sendSwipe(swipedUserId, action);
             
-            console.log('📤 Swipe response:', response.data);
+            console.log('📤 Swipe response:', data);
             
             // Según la API, la respuesta es: { success: true, match: true/false, message: "..." }
-            if (!response.data.success) {
-                throw new Error(response.data.error || 'Error en el swipe');
+            if (!data.success) {
+                throw new Error(data.error || 'Error en el swipe');
             }
             
             // Si hay match, mostrar notificación y modal
-            if (response.data.match) {
-                setMatchNotice(`¡Match creado! 🎉 ${response.data.message || ''}`);
+            if (data.match) {
+                setMatchNotice(`¡Match creado! 🎉 ${data.message || ''}`);
                 setTimeout(() => setMatchNotice(null), 4000);
                 
                 // Mostrar modal de match con el nombre del usuario
@@ -152,7 +149,7 @@ export function Match() {
                 }, 1000);
             }
             
-            return response.data;
+            return data;
         } catch (err) {
             console.error('💥 Error in sendSwipe:', err);
             let errorMessage = 'Error al enviar swipe';

@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authService } from '../../services/authService';
-import { locationService } from '../../services/locationService';
-import { sportService } from '../../services/sportService';
-import { profilePhotoService } from '../../services/profilePhotoService';
+import { authService } from '../../../services/authService';
+import { locationService } from '../../../services/locationService';
+import { sportService } from '../../../services/sportService';
+import { profilePhotoService } from '../../../services/profilePhotoService';
 
 export function EditProfile() {
   const navigate = useNavigate();
