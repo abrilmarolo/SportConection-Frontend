@@ -1,21 +1,50 @@
 import React, { useState } from 'react';
+import emailjs from '@emailjs/browser';
 
 export function Contact() {
   const [form, setForm] = useState({
     nombre: '',
     email: '',
+    asunto: '',
     mensaje: '',
   });
   const [enviado, setEnviado] = useState(false);
+  const [enviando, setEnviando] = useState(false);
+  const [error, setError] = useState('');
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setEnviado(true);
-    setForm({ nombre: '', email: '', mensaje: '' });
+    setEnviando(true);
+    setError('');
+
+    try {
+      // Configuración de EmailJS desde variables de entorno
+      const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+      const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
+      const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
+
+      // Parámetros del template
+      const templateParams = {
+        from_name: form.nombre,
+        from_email: form.email,
+        subject: form.asunto,
+        message: form.mensaje,
+        to_email: 'sportconection.info@gmail.com'
+      };
+
+      await emailjs.send(serviceId, templateId, templateParams, publicKey);
+      setEnviado(true);
+      setForm({ nombre: '', email: '', asunto: '', mensaje: '' });
+    } catch (err) {
+      console.error('Error al enviar email:', err);
+      setError('Hubo un error al enviar tu mensaje. Por favor, intenta nuevamente o escríbenos directamente a sportconection.info@gmail.com');
+    } finally {
+      setEnviando(false);
+    }
   };
 
   return (
@@ -37,9 +66,22 @@ export function Contact() {
             <span className="text-2xl">✅</span>
             <h2 className="text-xl font-medium text-gray-800 dark:text-white mt-4 mb-2">¡Gracias por tu consulta!</h2>
             <p className="text-gray-600 dark:text-gray-300">Nos pondremos en contacto contigo a la brevedad.</p>
+            <button
+              onClick={() => setEnviado(false)}
+              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Enviar otro mensaje
+            </button>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <>
+            {error && (
+              <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+                {error}
+              </div>
+            )}
+            
+            <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="nombre" className="block text-gray-700 dark:text-gray-200 mb-2">
                 Nombre
@@ -69,6 +111,20 @@ export function Contact() {
               />
             </div>
             <div>
+              <label htmlFor="asunto" className="block text-gray-700 dark:text-gray-200 mb-2">
+                Asunto
+              </label>
+              <input
+                type="text"
+                id="asunto"
+                name="asunto"
+                value={form.asunto}
+                onChange={handleChange}
+                required
+                className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              />
+            </div>
+            <div>
               <label htmlFor="mensaje" className="block text-gray-700 dark:text-gray-200 mb-2">
                 Mensaje
               </label>
@@ -84,11 +140,20 @@ export function Contact() {
             </div>
             <button
               type="submit"
-              className="w-full py-2 rounded-3xl text-white bg-blue-600 hover:bg-blue-700"
+              disabled={enviando}
+              className="w-full py-2 rounded-3xl text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
             >
-              Enviar Consulta
+              {enviando ? (
+                <span className="flex items-center justify-center gap-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  Enviando...
+                </span>
+              ) : (
+                'Enviar Consulta'
+              )}
             </button>
           </form>
+          </>
         )}
       </div>
     </section>
