@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FaEye, FaEyeSlash, FaGoogle } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+import { GoogleLogin } from '@react-oauth/google';
 import { authService } from '../../services/authService';
 import { useAuth } from '../../context/AuthContext';
 
@@ -80,10 +81,41 @@ export function Register() {
     }
   };
 
-  const handleGoogleLogin = () => {
-    console.log('Google login - Por implementar');
-    // TODO: Implementar Google OAuth
-    setError('Funcionalidad de Google por implementar');
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      setLoading(true);
+      setError('');
+
+      // Llamar al servicio de Google login
+      const response = await authService.googleLogin(credentialResponse.credential);
+
+      console.log('Registro con Google exitoso:', response);
+
+      // Guardar token y datos del usuario
+      sessionStorage.setItem('registrationData', JSON.stringify({
+        email: response.user.email,
+        token: response.token,
+        userId: response.user.id
+      }));
+
+      // Si requiere completar perfil, navegar a selección de tipo de usuario
+      if (response.requiresProfile) {
+        navigate('/RegistroTipoDeUsuario');
+      } else {
+        // Si ya tiene perfil completo, autenticar
+        await login({ googleToken: credentialResponse.credential });
+      }
+
+    } catch (error) {
+      console.error('Error en registro con Google:', error);
+      setError(error.message || 'Error al registrar con Google');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleError = () => {
+    setError('Error al registrar con Google. Intenta nuevamente.');
   };
 
   return (
@@ -151,14 +183,31 @@ export function Register() {
             </button>
           </div>
 
-          <button
-            type="button"
-            onClick={handleGoogleLogin}
-            className="w-full py-2 px-4 mb-4 flex items-center justify-center gap-2 bg-white border border-gray-300 rounded-3xl text-gray-700 hover:bg-gray-100"
-          >
-            <FaGoogle />
-            Registrarse con Google
-          </button>
+          <div className="relative my-3">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+                O continúa con
+              </span>
+            </div>
+          </div>
+
+          <div className="w-full flex justify-center">
+            {/* Temporalmente deshabilitado - configurar origins en Google Cloud Console */}
+            {/* <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={handleGoogleError}
+              text="signup_with"
+              shape="pill"
+              size="large"
+              width="100%"
+            /> */}
+            <div className="w-full p-3 text-center text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 rounded-lg">
+              Google Sign-In temporalmente deshabilitado. Configura los origins autorizados en Google Cloud Console.
+            </div>
+          </div>
 
           <button
             type="submit"
@@ -186,3 +235,4 @@ export function Register() {
   );
 
 }
+

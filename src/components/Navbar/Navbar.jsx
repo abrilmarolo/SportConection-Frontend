@@ -36,17 +36,10 @@ export function Navbar() {
           <Logo />
           <NavigationLinks routes={getNavigationRoutes()} />
           
-          {isAuthenticated && !isAdmin && (
-            <Link 
-              to="/Suscripcion" 
-              className="hidden md:block ml-4 text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-              title="Suscripción Premium"
-            >
-              <FaBolt className="text-2xl" />
-            </Link>
-          )}
+          
           
           <div className='hidden md:flex items-center space-x-3'>
+            
             {isAuthenticated ? (
               <UserButtons user={user} />
             ) : (

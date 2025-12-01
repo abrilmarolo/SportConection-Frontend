@@ -78,8 +78,30 @@ export function AuthProvider({ children }) {
       setLoading(true);
       setAuthError(null);
 
-      const response = await authService.login(credentials);
+      let response;
+      
+      // Detectar si es login con Google o credenciales normales
+      if (credentials.googleToken) {
+        // Login con Google
+        response = await authService.googleLogin(credentials.googleToken);
+      } else {
+        // Login normal con email/password
+        response = await authService.login(credentials);
+      }
 
+      // Si requiere completar perfil, NO autenticar todavía
+      if (response.requiresProfile) {
+        // Guardar temporalmente en sessionStorage
+        sessionStorage.setItem('registrationData', JSON.stringify({
+          email: response.user?.email,
+          token: response.token,
+          userId: response.user?.id || response.userId
+        }));
+        navigate('/RegistroTipoDeUsuario');
+        return response;
+      }
+
+      // Solo autenticar si el perfil está completo
       localStorage.setItem('token', response.token);
       localStorage.setItem('user', JSON.stringify(response.user));
 
@@ -87,10 +109,11 @@ export function AuthProvider({ children }) {
       setIsAuthenticated(true);
 
       navigate('/');
+      
       return response;
     } catch (error) {
       console.error('Login error in AuthContext:', error.message);
-      setAuthError('Credenciales Invalidas');
+      setAuthError(error.message || 'Credenciales Invalidas');
       throw error;
     } finally {
       setLoading(false);

@@ -12,6 +12,7 @@ import { EditProfile } from "../pages/Profile/components/EditProfile";
 import { FrequentQuestions } from "../pages/FrequentQuestions/FrequentQuestions";
 import { RegisterPartTwo } from "../pages/Register/components/RegisterPartTwo";
 import { Subscription } from "../pages/Subscription/Subscription";
+import { SubscriptionSuccess } from "../pages/Subscription/components/SubscriptionSuccess";
 
 import { CreateLocation } from "../pages/Admin/Location/CreateLocation";
 import { CreateSport } from "../pages/Admin/Sport/CreateSport";
@@ -40,7 +41,6 @@ export const userRoutes = [
     { path: "/Match", element: <Match />, name: "Hacer Match"},
     { path: "/Chat", element: <Chat />, name: "Chats"},
     { path: "/Mapa", element: <Map />, name: "Mapa"},
-    { path: "/Suscripcion", element: <Subscription />, name: "Suscripción"},
 ];
 
 export const adminRoutes = [
@@ -54,5 +54,7 @@ export const adminCreateRoutes = [
     { path: "/CrearDeporte", element: <CreateSport />, name: "Crear Deporte"},
 ];
 export const registerPartTwoRoute = { path: "/RegistroTipoDeUsuario", element: <RegisterPartTwo />, name: "Registro Parte Dos" };
+export const subscriptionRoute = { path: "/Suscripcion", element: <Subscription />, name: "Suscripción Premium" };
+export const subscriptionSuccessRoute = { path: "/success", element: <SubscriptionSuccess />, name: "Suscripción Exitosa" };
 
-export const routes = [...publicRoutes, ...authRoutes, ...userRoutes, ...adminRoutes, profileRoute, editProfileRoute, registerPartTwoRoute, ...adminCreateRoutes];
+export const routes = [...publicRoutes, ...authRoutes, ...userRoutes, ...adminRoutes, profileRoute, subscriptionRoute, subscriptionSuccessRoute, editProfileRoute, registerPartTwoRoute, ...adminCreateRoutes];

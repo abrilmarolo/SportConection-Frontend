@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaEye, FaEyeSlash, FaGoogle, FaExclamationTriangle } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
+import { GoogleLogin } from '@react-oauth/google';
 export function LogIn() {
   const navigate = useNavigate();
   const [credentials, setCredentials] = useState({
@@ -48,9 +49,25 @@ export function LogIn() {
     }
   };
 
-  const handleGoogleLogin = () => {
-    // Implementar login con Google
-    console.log('Google login');
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      setIsLoading(true);
+      setError('');
+      clearError();
+      
+      // El token viene en credentialResponse.credential
+      await login({ googleToken: credentialResponse.credential });
+      console.log('Google login exitoso');
+    } catch (error) {
+      console.error('Error en Google login:', error);
+      setError(error.message || 'Error al iniciar sesión con Google');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleError = () => {
+    setError('Error al iniciar sesión con Google. Intenta nuevamente.');
   };
 
   return (
@@ -128,15 +145,17 @@ export function LogIn() {
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={handleGoogleLogin}
-            disabled={isLoading}
-            className="w-full py-2 px-4 flex items-center justify-center gap-2 bg-white border border-gray-300 rounded-3xl text-gray-700 hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:bg-gray-600 cursor-pointer"
-          >
-            <FaGoogle />
-            Iniciar sesión con Google
-          </button>
+          <div className="w-full flex justify-center">
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={handleGoogleError}
+              useOneTap
+              text="signin_with"
+              shape="pill"
+              size="large"
+              width="100%"
+            />
+          </div>
 
           <div className="text-center mt-4">
             <span className="text-gray-600 dark:text-gray-400">

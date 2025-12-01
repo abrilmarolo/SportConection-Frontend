@@ -5,6 +5,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { useAdmin } from '../../../context/AdminContext';
 import { profileRoute } from '../../../routes/routes';
 import api from '../../../services/api';
+import { FaBolt } from 'react-icons/fa';
 
 export function HamburgerMenu({ isOpen, setIsOpen }) {
   const registerRoute = routes.find(route => route.path === '/Registro');
@@ -58,12 +59,23 @@ export function HamburgerMenu({ isOpen, setIsOpen }) {
     <div className='md:hidden flex items-center'>
       {isAuthenticated ? (
         <div className="flex items-center space-x-3">
+          {!isAdmin && (
+            <Link
+              to="/Suscripcion"
+              className="text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+              title="Suscripción Premium"
+            >
+              <FaBolt className="text-2xl" />
+            </Link>
+          )}
+          
           <Link
             to={profileRoute.path}
             className="flex items-center space-x-2"
             title="Mi Perfil"
           >
             <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 flex items-center justify-center border-2 border-gray-300 dark:border-gray-600">
+              
               {profilePhoto ? (
                 <img
                   src={profilePhoto}

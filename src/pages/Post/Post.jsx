@@ -2,19 +2,73 @@ import React, { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import api from '../../services/api'
 
+// Clase PostUser - Equivalente a PostUser.java
+class PostUser {
+  constructor(data = {}) {
+    this.id = data.id || 0
+    this.email = data.email || ''
+    this.role = data.role || ''
+    this.name = data.name || ''
+    this.lastName = data.last_name || data.lastName || ''
+    this.photoUrl = data.photo_url || data.photoUrl || null
+  }
+
+  // Método auxiliar para obtener el nombre completo (equivalente a getFullName() en Java)
+  getFullName() {
+    if (this.name && this.name.trim() && this.lastName && this.lastName.trim()) {
+      return `${this.name} ${this.lastName}`
+    } else if (this.name && this.name.trim()) {
+      return this.name
+    } else if (this.lastName && this.lastName.trim()) {
+      return this.lastName
+    } else if (this.email && this.email.trim()) {
+      // Extraer un nombre del email (parte antes del @)
+      let username = this.email.split('@')[0]
+      // Capitalizar primera letra y reemplazar puntos/guiones con espacios
+      username = username.replace(/\./g, ' ').replace(/_/g, ' ').replace(/-/g, ' ')
+      // Capitalizar cada palabra
+      const words = username.split(' ')
+      const result = words
+        .map(word => {
+          if (word.length > 0) {
+            return word.charAt(0).toUpperCase() + (word.length > 1 ? word.substring(1).toLowerCase() : '')
+          }
+          return ''
+        })
+        .join(' ')
+        .trim()
+      return result
+    } else {
+      return 'Usuario desconocido'
+    }
+  }
+}
+
+// Clase PostModel - Equivalente a Post.java
+class PostModel {
+  constructor(data = {}) {
+    this.id = data.id || 0
+    this.userId = data.user_id || data.userId || 0
+    this.text = data.text || ''
+    this.url = data.url || null
+    this.createdAt = data.created_at || data.createdAt || ''
+    this.user = new PostUser(data.user || {})
+  }
+}
+
 export function Post() {
   const { isAuthenticated, user } = useAuth()
   
   // Estados
   const [posts, setPosts] = useState([])
   const [text, setText] = useState('')
-  const [url, setUrl] = useState('')
   const [selectedFile, setSelectedFile] = useState(null)
   const [filePreview, setFilePreview] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [loadingPosts, setLoadingPosts] = useState(false)
   const [error, setError] = useState('')
+  const [userProfile, setUserProfile] = useState(null)
   const [activeTab, setActiveTab] = useState('all') // 'all' o 'my-posts'
-  const [userProfile, setUserProfile] = useState(null) // Perfil completo con photo_url
 
   // Cargar perfil del usuario autenticado
   useEffect(() => {
@@ -31,65 +85,86 @@ export function Post() {
     loadUserProfile()
   }, [isAuthenticated])
 
-  // Cargar publicaciones al montar y cambiar tab
+  // Cargar publicaciones al montar
   useEffect(() => {
-    loadPosts()
-  }, [activeTab])
+    if (activeTab === 'all' || (activeTab === 'my-posts' && isAuthenticated)) {
+      loadPosts()
+    }
+  }, [activeTab, userProfile])
 
   // Función para cargar publicaciones
   const loadPosts = async () => {
     try {
-      setLoading(true)
+      setLoadingPosts(true)
       setError('')
       
       if (activeTab === 'all') {
-        // GET /posts - Todas las publicaciones (público)
+        // GET /posts - Todas las publicaciones
         const response = await api.get('/posts')
         const postsData = Array.isArray(response.data) ? response.data : []
         
-        // Enriquecer cada post con el perfil del usuario (para obtener photo_url)
+        // Enriquecer cada post con datos del perfil del usuario
         const enrichedPosts = await Promise.all(
-          postsData.map(async (post) => {
+          postsData.map(async (postData) => {
             try {
+              const post = new PostModel(postData)
+              
               // Si es mi propio post, usar mi perfil cargado
-              if (user && post.user_id === user.id && userProfile) {
-                return {
-                  ...post,
-                  user: {
-                    ...post.user,
-                    photo_url: userProfile.photo_url || null
-                  }
-                }
+              if (user && userProfile && String(post.userId) === String(user.id)) {
+                post.user.name = userProfile.name || ''
+                post.user.lastName = userProfile.last_name || ''
+                post.user.photoUrl = userProfile.photo_url || null
+                post.user.email = user.email || ''
+                return post
               }
               
-              // GET /profile/:userId - Obtener perfil con photo_url de otros usuarios
-              const profileResponse = await api.get(`/profile/${post.user_id}`)
-              return {
-                ...post,
-                user: {
-                  ...post.user,
-                  photo_url: profileResponse.data.profile?.photo_url || null
-                }
+              // Para otros usuarios, obtener su perfil desde /profile/:userId
+              try {
+                const profileResponse = await api.get(`/profile/${post.userId}`)
+                const profileData = profileResponse.data.profile || {}
+                
+                // El endpoint /profile/:userId solo devuelve name, photo_url, sport, location, description
+                // Necesitamos mantener email y last_name del objeto original del post
+                post.user.name = profileData.name || ''
+                post.user.photoUrl = profileData.photo_url || profileData.photoUrl || null
+                // Mantener last_name y email del objeto original ya que /profile/:userId no los devuelve
+                
+                return post
+              } catch (profileError) {
+                console.error(`Error loading profile for user ${post.userId}:`, profileError)
+                return post
               }
             } catch (error) {
-              // Si falla, devolver el post sin modificar
-              console.error(`Error al cargar perfil del usuario ${post.user_id}:`, error)
-              return post
+              console.error('Error processing post:', error)
+              return new PostModel(postData)
             }
           })
         )
         
         setPosts(enrichedPosts)
       } else {
-        // GET /posts/my-posts - Mis publicaciones (requiere auth)
+        // GET /posts/my-posts - Mis publicaciones
         const response = await api.get('/posts/my-posts')
-        setPosts(response.data.post || [])
+        const myPostsData = response.data.post || []
+        
+        // Convertir a instancias de PostModel y enriquecer con mi perfil
+        const myPosts = myPostsData.map(postData => {
+          const post = new PostModel(postData)
+          if (userProfile) {
+            post.user.name = userProfile.name || ''
+            post.user.lastName = userProfile.last_name || ''
+            post.user.photoUrl = userProfile.photo_url || null
+          }
+          return post
+        })
+        
+        setPosts(myPosts)
       }
     } catch (err) {
       setError('Error al cargar publicaciones')
       console.error(err)
     } finally {
-      setLoading(false)
+      setLoadingPosts(false)
     }
   }
 
@@ -98,16 +173,14 @@ export function Post() {
     const file = e.target.files?.[0]
     if (!file) return
 
-    // Validar tipo de archivo
     const validImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
     const validVideoTypes = ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime']
     
     if (!validImageTypes.includes(file.type) && !validVideoTypes.includes(file.type)) {
-      setError('Solo se permiten imágenes (JPG, PNG, GIF, WEBP) o videos (MP4, WEBM, OGG, MOV)')
+      setError('Solo se permiten imágenes o videos')
       return
     }
 
-    // Validar tamaño (máximo 50MB)
     if (file.size > 50 * 1024 * 1024) {
       setError('El archivo no debe superar 50MB')
       return
@@ -116,18 +189,11 @@ export function Post() {
     setSelectedFile(file)
     setError('')
 
-    // Crear preview
     const reader = new FileReader()
     reader.onloadend = () => {
       setFilePreview(reader.result)
     }
     reader.readAsDataURL(file)
-  }
-
-  // Función para remover archivo
-  const handleRemoveFile = () => {
-    setSelectedFile(null)
-    setFilePreview(null)
   }
 
   // Función para crear publicación
@@ -143,23 +209,17 @@ export function Post() {
       setLoading(true)
       setError('')
 
-      // Nota: El backend solo acepta URL string, no archivos
-      // Si hay archivo seleccionado, usamos el preview local como URL
-      const postUrl = selectedFile ? filePreview : (url.trim() || undefined)
+      const postUrl = selectedFile ? filePreview : undefined
       
-      // POST /posts - Crear publicación
       await api.post('/posts', {
         text: text.trim(),
         url: postUrl
       })
       
-      // Limpiar formulario
       setText('')
-      setUrl('')
       setSelectedFile(null)
       setFilePreview(null)
       
-      // Recargar publicaciones
       await loadPosts()
     } catch (err) {
       setError('Error al crear publicación')
@@ -174,19 +234,15 @@ export function Post() {
     if (!window.confirm('¿Eliminar esta publicación?')) return
 
     try {
-      setLoading(true)
+      setLoadingPosts(true)
       setError('')
-      
-      // DELETE /posts/:id
       await api.delete(`/posts/${postId}`)
-      
-      // Recargar publicaciones
       await loadPosts()
     } catch (err) {
       setError('Error al eliminar publicación')
       console.error(err)
     } finally {
-      setLoading(false)
+      setLoadingPosts(false)
     }
   }
 
@@ -199,7 +255,7 @@ export function Post() {
     const diffHours = Math.floor(diffMs / 3600000)
     const diffDays = Math.floor(diffMs / 86400000)
 
-    if (diffMins < 1) return 'Ahora'
+    if (diffMins < 1) return 'ahora'
     if (diffMins < 60) return `${diffMins}m`
     if (diffHours < 24) return `${diffHours}h`
     if (diffDays < 7) return `${diffDays}d`
@@ -209,24 +265,15 @@ export function Post() {
 
   // Verificar si el post es del usuario actual
   const isOwnPost = (post) => {
-    return user && post.user_id === user.id
+    return user && post.userId === user.id
   }
 
-  // Función para extraer username del email
-  const getUsernameFromEmail = (email) => {
-    if (!email) return 'Usuario'
-    return email.split('@')[0]
-  }
-
-  // Función para detectar tipo de medio desde URL
+  // Función para detectar tipo de medio
   const getMediaType = (url) => {
     if (!url) return null
     
-    // Detectar base64 (imágenes y videos subidos desde el formulario)
-    if (url.startsWith('data:')) {
-      if (url.startsWith('data:image/')) return 'image'
-      if (url.startsWith('data:video/')) return 'video'
-    }
+    if (url.startsWith('data:image/')) return 'image'
+    if (url.startsWith('data:video/')) return 'video'
     
     const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov']
     const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp']
@@ -236,10 +283,7 @@ export function Post() {
     if (videoExtensions.some(ext => lowerUrl.includes(ext))) return 'video'
     if (imageExtensions.some(ext => lowerUrl.includes(ext))) return 'image'
     
-    // Detectar YouTube
-    if (lowerUrl.includes('youtube.com') || lowerUrl.includes('youtu.be')) return 'youtube'
-    
-    return 'link'
+    return null
   }
 
   // Función para renderizar medio
@@ -251,7 +295,7 @@ export function Post() {
         <img 
           src={url} 
           alt="Contenido de publicación" 
-          className="w-full rounded-lg mt-3 max-h-96 object-cover"
+          className="w-full rounded-lg mt-2 sm:mt-3 max-h-60 sm:max-h-96 object-cover"
           onError={(e) => e.target.style.display = 'none'}
         />
       )
@@ -262,46 +306,9 @@ export function Post() {
         <video 
           src={url} 
           controls 
-          className="w-full rounded-lg mt-3 max-h-96"
+          className="w-full rounded-lg mt-2 sm:mt-3 max-h-60 sm:max-h-96"
           onError={(e) => e.target.style.display = 'none'}
         />
-      )
-    }
-    
-    if (mediaType === 'youtube') {
-      const videoId = url.includes('youtu.be') 
-        ? url.split('youtu.be/')[1]?.split('?')[0]
-        : url.split('v=')[1]?.split('&')[0]
-      
-      if (videoId) {
-        return (
-          <iframe
-            className="w-full rounded-lg mt-3"
-            height="315"
-            src={`https://www.youtube.com/embed/${videoId}`}
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
-        )
-      }
-    }
-    
-    if (mediaType === 'link') {
-      return (
-        <a 
-          href={url} 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="block mt-3 p-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
-        >
-          <div className="flex items-center text-blue-600">
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-            </svg>
-            {url}
-          </div>
-        </a>
       )
     }
     
@@ -309,21 +316,30 @@ export function Post() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="w-[80%] mx-auto py-8 px-4">
+    <>
+      {!isAuthenticated ? (
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center p-8 bg-red-700 dark:bg-red-900 rounded-lg">
+            <h2 className="text-2xl text-white font-normal">Acceso Denegado</h2>
+            <p className="mt-2 text-white">Debes iniciar sesión para ver las publicaciones</p>
+          </div>
+        </div>
+      ) : (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="w-full sm:w-[95%] lg:w-[85%] xl:w-[80%] mx-auto py-4 sm:py-6 lg:py-8 px-3 sm:px-4">
         
         {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Publicaciones</h1>
-          <p className="text-gray-600 mt-1">Comparte tu actividad deportiva</p>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6 mb-4 sm:mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Publicaciones</h1>
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">Comparte tu actividad deportiva</p>
         </div>
 
         {/* Formulario de crear publicación */}
         {isAuthenticated && (
-          <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-3 sm:p-4 lg:p-6 mb-4 sm:mb-6">
             <form onSubmit={handleCreatePost}>
-              <div className="flex items-start space-x-4">
-                <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center overflow-hidden">
+              <div className="flex items-start space-x-2 sm:space-x-4">
+                <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center overflow-hidden">
                   {userProfile?.photo_url ? (
                     <img 
                       src={userProfile.photo_url} 
@@ -331,7 +347,7 @@ export function Post() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <span className="text-white font-bold text-lg">
+                    <span className="text-white font-bold text-base sm:text-lg">
                       {user?.email?.[0]?.toUpperCase() || 'U'}
                     </span>
                   )}
@@ -342,30 +358,33 @@ export function Post() {
                     value={text}
                     onChange={(e) => setText(e.target.value)}
                     placeholder="¿Qué está pasando?"
-                    className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                    className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded-lg p-2 sm:p-3 text-sm sm:text-base focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                     rows="3"
                     maxLength="500"
                   />
                   
                   {/* Vista previa del archivo */}
                   {filePreview && (
-                    <div className="relative mt-3 border border-gray-300 rounded-lg overflow-hidden">
+                    <div className="relative mt-2 sm:mt-3 border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
                       {selectedFile?.type.startsWith('image/') ? (
                         <img 
                           src={filePreview} 
                           alt="Preview" 
-                          className="w-full max-h-96 object-contain"
+                          className="w-full max-h-60 sm:max-h-96 object-contain"
                         />
                       ) : (
                         <video 
                           src={filePreview} 
                           controls 
-                          className="w-full max-h-96"
+                          className="w-full max-h-60 sm:max-h-96"
                         />
                       )}
                       <button
                         type="button"
-                        onClick={handleRemoveFile}
+                        onClick={() => {
+                          setSelectedFile(null)
+                          setFilePreview(null)
+                        }}
                         className="absolute top-2 right-2 bg-red-600 text-white p-2 rounded-full hover:bg-red-700 transition"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -375,27 +394,27 @@ export function Post() {
                     </div>
                   )}
                   
-                  <div className="flex items-center justify-between mt-4">
+                  <div className="flex items-center justify-between mt-3 sm:mt-4">
                     <div className="flex items-center space-x-2">
                       {/* Botón para cargar archivo */}
                       <input
                         type="file"
-                        id="file-upload"
+                        id="media-upload"
                         accept="image/*,video/*"
                         onChange={handleFileSelect}
                         className="hidden"
                       />
                       <label
-                        htmlFor="file-upload"
+                        htmlFor="media-upload"
                         className="cursor-pointer text-blue-600 hover:text-blue-700 transition"
                         title="Cargar imagen o video"
                       >
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                       </label>
                       
-                      <span className="text-sm text-gray-500">
+                      <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                         {text.length}/500
                       </span>
                     </div>
@@ -403,7 +422,7 @@ export function Post() {
                     <button
                       type="submit"
                       disabled={loading || !text.trim()}
-                      className="bg-blue-600 text-white px-6 py-2 rounded-full font-semibold hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
+                      className="bg-blue-600 text-white px-4 sm:px-6 py-1.5 sm:py-2 text-sm sm:text-base rounded-full font-semibold hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
                     >
                       {loading ? 'Publicando...' : 'Publicar'}
                     </button>
@@ -415,14 +434,14 @@ export function Post() {
         )}
 
         {/* Tabs */}
-        <div className="bg-white rounded-t-lg shadow-sm border-b">
+        <div className="bg-white dark:bg-gray-800 rounded-t-lg shadow-sm border-b dark:border-gray-700">
           <div className="flex">
             <button
               onClick={() => setActiveTab('all')}
-              className={`flex-1 py-4 px-6 font-semibold transition ${
+              className={`flex-1 py-3 sm:py-4 px-3 sm:px-6 text-sm sm:text-base font-semibold transition ${
                 activeTab === 'all'
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-600 hover:bg-gray-50'
+                  ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
+                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
               }`}
             >
               Todas las publicaciones
@@ -431,10 +450,10 @@ export function Post() {
             {isAuthenticated && (
               <button
                 onClick={() => setActiveTab('my-posts')}
-                className={`flex-1 py-4 px-6 font-semibold transition ${
+                className={`flex-1 py-3 sm:py-4 px-3 sm:px-6 text-sm sm:text-base font-semibold transition ${
                   activeTab === 'my-posts'
-                    ? 'text-blue-600 border-b-2 border-blue-600'
-                    : 'text-gray-600 hover:bg-gray-50'
+                    ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
+                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}
               >
                 Mis publicaciones
@@ -445,60 +464,67 @@ export function Post() {
 
         {/* Mensajes de error */}
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+          <div className="bg-red-50 border border-red-200 text-red-700 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base rounded-lg mb-4">
             {error}
           </div>
         )}
 
         {/* Lista de publicaciones */}
-        <div className="bg-white rounded-b-lg shadow-sm">
-          {loading && posts.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
+        <div className="bg-white dark:bg-gray-800 rounded-b-lg shadow-sm">
+          {loadingPosts && posts.length === 0 ? (
+            <div className="p-6 sm:p-8 text-center text-sm sm:text-base text-gray-500 dark:text-gray-400">
               Cargando publicaciones...
             </div>
           ) : posts.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
+            <div className="p-6 sm:p-8 text-center text-sm sm:text-base text-gray-500 dark:text-gray-400">
               {activeTab === 'my-posts' 
                 ? 'No tienes publicaciones aún' 
                 : 'No hay publicaciones disponibles'}
             </div>
           ) : (
-            <div className="divide-y divide-gray-200">
+            <div className="divide-y divide-gray-200 dark:divide-gray-700">
               {posts.map((post) => (
-                <div key={post.id} className="p-6">
-                  <div className="flex items-start space-x-4">
+                <div key={post.id} className="p-3 sm:p-4 lg:p-6">
+                  <div className="flex items-start space-x-2 sm:space-x-3 lg:space-x-4">
                     {/* Avatar */}
-                    <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center overflow-hidden">
-                      {(post.user?.photo_url || (activeTab === 'my-posts' && userProfile?.photo_url)) ? (
+                    <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center overflow-hidden">
+                      {post.user.photoUrl ? (
                         <img 
-                          src={post.user?.photo_url || userProfile?.photo_url} 
+                          src={post.user.photoUrl} 
                           alt="Avatar" 
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <span className="text-white font-bold text-lg">
-                          {getUsernameFromEmail(post.user?.email || (activeTab === 'my-posts' ? user?.email : null))?.[0]?.toUpperCase() || 'U'}
+                        <span className="text-white font-bold text-base sm:text-lg">
+                          {post.user.getFullName()[0]?.toUpperCase() || 'U'}
                         </span>
                       )}
-                    </div>                    {/* Contenido */}
+                    </div>
+                    
+                    {/* Contenido */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-gray-900 font-semibold">
-                            @{getUsernameFromEmail(post.user?.email || (activeTab === 'my-posts' ? user?.email : null))}
-                          </p>
-                          <p className="text-gray-500 text-sm">
-                            {formatDate(post.created_at)}
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-2">
+                            <p className="text-sm sm:text-base text-gray-900 dark:text-white font-semibold truncate">
+                              {post.user.getFullName()}
+                            </p>
+                            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 truncate">
+                              {post.user.email}
+                            </p>
+                          </div>
+                          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                            {formatDate(post.createdAt)}
                           </p>
                         </div>
                       </div>
                       
                       {/* Texto de la publicación */}
-                      <p className="text-gray-800 mt-3 whitespace-pre-wrap break-words">
+                      <p className="text-sm sm:text-base text-gray-800 dark:text-gray-200 mt-2 sm:mt-3 whitespace-pre-wrap break-words">
                         {post.text}
                       </p>
                       
-                      {/* Media (imagen/video/link) */}
+                      {/* Media (imagen/video) */}
                       {post.url && renderMedia(post.url)}
                     </div>
                     
@@ -506,11 +532,11 @@ export function Post() {
                     {isOwnPost(post) && (
                       <button
                         onClick={() => handleDeletePost(post.id)}
-                        disabled={loading}
-                        className="flex-shrink-0 text-red-600 hover:text-red-800 disabled:text-gray-400 p-2 transition"
+                        disabled={loadingPosts}
+                        className="flex-shrink-0 text-red-600 hover:text-red-800 disabled:text-gray-400 p-1 sm:p-2 transition"
                         title="Eliminar publicación"
                       >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
                       </button>
@@ -523,13 +549,9 @@ export function Post() {
         </div>
 
         {/* Info de no autenticado */}
-        {!isAuthenticated && (
-          <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg mt-6">
-            <p className="font-semibold">Inicia sesión para publicar</p>
-            <p className="text-sm mt-1">Regístrate para compartir tus momentos deportivos</p>
-          </div>
-        )}
       </div>
     </div>
+      )}
+    </>
   )
 }

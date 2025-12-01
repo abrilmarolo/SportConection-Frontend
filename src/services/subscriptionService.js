@@ -15,12 +15,17 @@ export const subscriptionService = {
   // Crear sesión de checkout
   createCheckoutSession: async (planId) => {
     try {
+      console.log('Creando checkout session con planId:', planId);
       const res = await api.post('/subscriptions/create-checkout-session', {
         plan_id: planId
       });
+      console.log('Respuesta del checkout:', res.data);
       return res.data;
     } catch (err) {
       console.error('Error al crear sesión de checkout:', err);
+      console.error('Detalles del error:', err.response?.data);
+      console.error('Status del error:', err.response?.status);
+      console.error('Mensaje del backend:', err.response?.data?.message || err.response?.data?.error);
       throw err;
     }
   },
@@ -51,6 +56,7 @@ export const subscriptionService = {
   getSubscriptionStatus: async () => {
     try {
       const res = await api.get('/subscriptions/status');
+      console.log('Estado de suscripción recibido:', res.data);
       return res.data;
     } catch (err) {
       // Silenciar completamente errores 404 y 500 (sin suscripción)

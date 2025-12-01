@@ -5,6 +5,7 @@ import { useAdmin } from '../../../context/AdminContext';
 import { useAuth } from '../../../context/AuthContext';
 import { profileRoute } from '../../../routes/routes';
 import api from '../../../services/api';
+import { FaBolt } from 'react-icons/fa';
 
 export function UserButtons({ user }) {
   const { logout } = useAuth();
@@ -35,7 +36,7 @@ export function UserButtons({ user }) {
   useEffect(() => {
     const handleProfileUpdate = async () => {
       if (isAdmin) return; // No cargar perfil para admins
-      
+
       try {
         const response = await api.get('/profile/me');
         setProfilePhoto(response.data.profile?.photo_url);
@@ -47,7 +48,7 @@ export function UserButtons({ user }) {
     };
 
     window.addEventListener('profilePhotoUpdated', handleProfileUpdate);
-    
+
     return () => {
       window.removeEventListener('profilePhotoUpdated', handleProfileUpdate);
     };
@@ -56,6 +57,16 @@ export function UserButtons({ user }) {
 
   return (
     <div className="flex items-center space-x-4">
+      {!isAdmin && (
+        <Link
+          to="/Suscripcion"
+          className="hidden md:block ml-4 text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+          title="Suscripción Premium"
+        >
+          <FaBolt className="text-2xl" />
+        </Link>
+      )}
+
       <Link
         to={profileRoute.path}
         className="flex items-center space-x-2 group"
@@ -73,11 +84,11 @@ export function UserButtons({ user }) {
               }}
             />
           ) : (
-           
-              <span className="text-lg font-bold">
-                {isAdmin ? 'A' : (profileData?.profile?.name?.[0]?.toUpperCase() || 'U')}
-              </span>
-            
+
+            <span className="text-lg font-bold">
+              {isAdmin ? 'A' : (profileData?.profile?.name?.[0]?.toUpperCase() || 'U')}
+            </span>
+
           )}
         </div>
       </Link>
