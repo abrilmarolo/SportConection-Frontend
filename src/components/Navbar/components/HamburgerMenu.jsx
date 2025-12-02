@@ -110,7 +110,7 @@ export function HamburgerMenu({ isOpen, setIsOpen }) {
             onClick={logout}
             whileTap={{ scale: 0.95 }}
             transition={{ duration: 0.1 }}
-            className="px-4 py-2 text-white bg-red-600 hover:bg-red-700 rounded-lg mr-2 cursor-pointer "
+            className="px-4 py-2 text-white bg-red-600 hover:bg-red-700  dark:bg-red-800 dark:hover:bg-red-900 rounded-lg mr-2 cursor-pointer "
           >
             Cerrar Sesión
           </motion.button>
@@ -125,7 +125,7 @@ export function HamburgerMenu({ isOpen, setIsOpen }) {
         >
           <Link
             to="/Registro"
-            className='px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 rounded-lg mr-2 block'>
+            className='px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 rounded-lg mr-2 block'>
             {registerRoute.name}
           </Link>
         </motion.div>

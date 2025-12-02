@@ -111,7 +111,7 @@ export function UserButtons({ user }) {
         onClick={logout}
         whileTap={{ scale: 0.95 }}
         transition={{ duration: 0.1 }}
-        className="px-2 py-2 text-white bg-red-600 hover:bg-red-700 rounded-lg hidden md:block cursor-pointer"
+        className="px-2 py-2 text-white bg-red-600 hover:bg-red-700  dark:bg-red-800 dark:hover:bg-red-900 rounded-lg hidden md:block cursor-pointer"
       >
         Cerrar Sesión
       </motion.button>

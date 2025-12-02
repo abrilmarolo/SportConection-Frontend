@@ -1,4 +1,5 @@
 import React from 'react'
+import { motion } from 'framer-motion'
 
 export function AboutUs() {
   return (
@@ -57,22 +58,38 @@ export function AboutUs() {
             Nuestro Equipo
           </h2>
           <div className="grid md:grid-cols-4 gap-8  mx-auto">
-            <div className="text-center p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+            <motion.div 
+              className="text-center p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700"
+              whileHover={{ scale: 1.05, y: -5 }}
+              transition={{ duration: 0.2 }}
+            >
               <h3 className="text-lg font-medium mb-1 text-gray-800 dark:text-white">Valentino Cortese</h3>
               <p className="text-gray-600 dark:text-gray-300 text-sm">Desarrollador Backend</p>
-            </div>
-            <div className="text-center p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+            </motion.div>
+            <motion.div 
+              className="text-center p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700"
+              whileHover={{ scale: 1.05, y: -5 }}
+              transition={{ duration: 0.2 }}
+            >
               <h3 className="text-lg font-medium mb-1 text-gray-800 dark:text-white">Abril Marolo</h3>
               <p className="text-gray-600 dark:text-gray-300 text-sm">Desarrolladora Frontend</p>
-            </div>
-            <div className="text-center p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+            </motion.div>
+            <motion.div 
+              className="text-center p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700"
+              whileHover={{ scale: 1.05, y: -5 }}
+              transition={{ duration: 0.2 }}
+            >
               <h3 className="text-lg font-medium mb-1 text-gray-800 dark:text-white">Lucas Canavese</h3>
               <p className="text-gray-600 dark:text-gray-300 text-sm">Desarrollador Frontend</p>
-            </div>
-            <div className="text-center p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+            </motion.div>
+            <motion.div 
+              className="text-center p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700"
+              whileHover={{ scale: 1.05, y: -5 }}
+              transition={{ duration: 0.2 }}
+            >
               <h3 className="text-lg font-medium mb-1 text-gray-800 dark:text-white">Bautista Paz</h3>
               <p className="text-gray-600 dark:text-gray-300 text-sm">Desarrollador Backend</p>
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>
@@ -82,12 +99,15 @@ export function AboutUs() {
           <p className="-300 mb-8 max-w-2xl mx-auto">
             Contáctanos y únete a nuestra misión de transformar el deporte profesional.
           </p>
-          <a
+          <motion.a
             href="/Contacto"
-            className="px-6 py-2 rounded-3xl text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 transition-colors text-sm font-medium"
+            className="inline-block px-6 py-2 rounded-3xl text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 transition-colors text-sm font-medium"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ duration: 0.2 }}
           >
             Contactar
-          </a>
+          </motion.a>
         </div>
       </section>
     </div>

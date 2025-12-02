@@ -134,7 +134,7 @@ export function LogIn() {
             disabled={isLoading}
             whileTap={{ scale: 0.95 }}
             transition={{ duration: 0.1 }}
-            className={`w-full py-2 rounded-3xl text-white ${isLoading ? 'bg-blue-400 cursor-pointer' : 'bg-blue-700 hover:bg-blue-500 cursor-pointer'}`}
+            className={`w-full py-2 rounded-3xl text-white ${isLoading ? 'bg-blue-400 cursor-pointer' : 'bg-blue-700 hover:bg-blue-600 dark:bg-blue-700 dark:hover:bg-blue-800 cursor-pointer'}`}
           >
             {isLoading ? 'Iniciando Sesión...' : 'Iniciar Sesión'}
           </motion.button>
@@ -171,7 +171,7 @@ export function LogIn() {
               onClick={() => navigate('/Registro')}
               whileTap={{ scale: 0.95 }}
               transition={{ duration: 0.1 }}
-              className="text-blue-500 hover:text-blue-700 dark:text-blue-400"
+              className="text-blue-600 hover:text-blue-700 dark:text-blue-500 dark:hover:text-blue-600"
             >
               Regístrate
             </motion.button>

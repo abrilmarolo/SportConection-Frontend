@@ -111,7 +111,16 @@ export function Post() {
               const post = new PostModel(postData)
               
               // Si es mi propio post, usar mi perfil cargado
-              if (user && userProfile && String(post.userId) === String(user.id)) {
+              // Comparar por ID o por email (por si el backend tiene IDs inconsistentes)
+              const isMyPost = user && userProfile && (
+                String(post.userId) === String(user.id) || 
+                String(postData.user_id) === String(user.id) ||
+                (postData.user?.email && postData.user.email === user.email)
+              )
+              
+              if (isMyPost) {
+                // FORZAR el userId correcto
+                post.userId = user.id
                 post.user.name = userProfile.name || ''
                 post.user.lastName = userProfile.last_name || ''
                 post.user.photoUrl = userProfile.photo_url || null
@@ -151,6 +160,12 @@ export function Post() {
         // Convertir a instancias de PostModel y enriquecer con mi perfil
         const myPosts = myPostsData.map(postData => {
           const post = new PostModel(postData)
+          
+          // FORZAR el userId a ser el del usuario actual ya que /posts/my-posts solo devuelve mis posts
+          if (user?.id) {
+            post.userId = user.id
+          }
+          
           if (userProfile) {
             post.user.name = userProfile.name || ''
             post.user.lastName = userProfile.last_name || ''
@@ -266,7 +281,10 @@ export function Post() {
 
   // Verificar si el post es del usuario actual
   const isOwnPost = (post) => {
-    return user && post.userId === user.id
+    if (!user) return false
+    const postUserId = post.userId || post.user?.id
+    const currentUserId = user.id || user.userId
+    return String(postUserId) === String(currentUserId)
   }
 
   // Función para detectar tipo de medio

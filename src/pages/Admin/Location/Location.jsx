@@ -105,7 +105,7 @@ export function Location() {
               Gestión de Ubicaciones
             </h2>
             <motion.button
-              className="mt-3 sm:mt-0 w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="mt-3 sm:mt-0 w-full sm:w-auto px-4 py-2  text-white rounded-lg bg-blue-700 hover:bg-blue-600 dark:bg-blue-700 dark:hover:bg-blue-800"
               onClick={() => navigate('/CrearUbicacion')}
               whileTap={{ scale: 0.95 }}
               transition={{ duration: 0.1 }}

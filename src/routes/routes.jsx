@@ -19,6 +19,8 @@ import { CreateSport } from "../pages/Admin/Sport/CreateSport";
 import { User } from "../pages/Admin/User/User";
 import { Location } from "../pages/Admin/Location/Location";
 import { Sport } from "../pages/Admin/Sport/Sport";
+import { Plan } from "../pages/Admin/Plan/Plan";
+import { CreatePlan } from "../pages/Admin/Plan/CreatePlan";
 
 export const publicRoutes = [
     { path: "/", element: <Home />, name: "" },
@@ -47,11 +49,13 @@ export const adminRoutes = [
     { path: "/Deportes", element: <Sport />, name: "Deportes"},
     { path: "/Ubicacion", element: <Location />, name: "Ubicaciones"},
     { path: "/Usuarios", element: <User />, name: "Usuarios"},
+    { path: "/Plan", element: <Plan />, name: "Planes"},
 ];
  
 export const adminCreateRoutes = [
     { path: "/CrearUbicacion", element: <CreateLocation />, name: "Crear Ubicación"},
     { path: "/CrearDeporte", element: <CreateSport />, name: "Crear Deporte"},
+    { path: "/CrearPlan", element: <CreatePlan />, name: "Crear Plan"},
 ];
 export const registerPartTwoRoute = { path: "/RegistroTipoDeUsuario", element: <RegisterPartTwo />, name: "Registro Parte Dos" };
 export const subscriptionRoute = { path: "/Suscripcion", element: <Subscription />, name: "Suscripción Premium" };

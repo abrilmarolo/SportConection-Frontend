@@ -193,7 +193,7 @@ export function Register() {
             disabled={loading}
             whileTap={{ scale: 0.95 }}
             transition={{ duration: 0.1 }}
-            className="w-full py-2 bg-blue-500 text-white rounded-3xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-2 bg-blue-600 text-white rounded-3xl hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Registrando...' : 'Siguiente'}
           </motion.button>
@@ -226,7 +226,7 @@ export function Register() {
               type="button"
               whileTap={{ scale: 0.95 }}
               transition={{ duration: 0.1 }}
-              className="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+              className="text-blue-600 hover:text-blue-700 dark:text-blue-500 dark:hover:text-blue-600"
               onClick={() => navigate('/InicioSesion')}
             >
               Inicia Sesión

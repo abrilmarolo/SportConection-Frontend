@@ -49,7 +49,7 @@ export function Contact() {
   };
 
   return (
-    <section className='mt-5'>
+    <section className='mt-5 min-h-screen'>
         <div className="container mx-auto text-center mb-8">
           <h1 className="text-3xl md:text-4xl font-medium text-gray-800 dark:text-white mb-4">
             Contactactanos

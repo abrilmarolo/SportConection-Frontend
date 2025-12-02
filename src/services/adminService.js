@@ -178,5 +178,56 @@ export const adminService = {
         'Error de conexión';
       throw new Error(errorMessage);
     }
+  },
+
+  // Subscription endpoints
+
+  deleteSubscription: async (id) => {
+    try {
+      const response = await api.delete(`/subscriptions/${id}`);
+      return response.data;
+    } catch (error) {
+      const errorMessage = error.response?.data?.message ||
+        error.response?.data?.error ||
+        'Error al eliminar suscripción';
+      throw new Error(errorMessage);
+    }
+  },
+
+  // Plan endpoints
+  getAllPlans: async () => {
+    try {
+      const response = await api.get('/admin/plans');
+      return response.data;
+    } catch (error) {
+      const errorMessage = error.response?.data?.message ||
+        error.response?.data?.error ||
+        'Error al obtener planes';
+      throw new Error(errorMessage);
+    }
+  },
+
+  createPlan: async (planData) => {
+    try {
+      const response = await api.post('/admin/plans', planData);
+      return response.data;
+    } catch (error) {
+      const errorMessage = error.response?.data?.message ||
+        error.response?.data?.error ||
+        'Error al crear plan';
+      throw new Error(errorMessage);
+    }
+  },
+
+  deletePlan: async (id) => {
+    try {
+      const response = await api.delete(`/admin/plans/${id}`);
+      return response.data;
+    } catch (error) {
+      const errorMessage = error.response?.data?.message ||
+        error.response?.data?.error ||
+        'Error al eliminar plan';
+      throw new Error(errorMessage);
+    }
   }
 }

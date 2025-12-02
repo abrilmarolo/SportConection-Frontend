@@ -48,8 +48,6 @@ export function Subscription() {
         try {
             const status = await subscriptionService.getSubscriptionStatus();
             console.log('✅ Estado de suscripción cargado:', status);
-            console.log('Status value:', status?.subscription_details?.status);
-            console.log('End date:', status?.subscription_details?.end_date);
             setSubscriptionStatus(status);
         } catch (err) {
             const isNoSubscription = err.response?.status === 404 || err.response?.status === 500;
@@ -67,67 +65,35 @@ export function Subscription() {
 
 
     async function handleAcquirePlan(planId) {
-        console.log('🔵 Iniciando proceso de compra...');
-        console.log('isAuthenticated:', isAuthenticated);
-        console.log('subscriptionStatus completo:', subscriptionStatus);
-        
         if (!isAuthenticated) {
             setError('Debes iniciar sesión para adquirir un plan.');
             return;
         }
 
-        // Verificar si tiene suscripción ACTIVA (no vencida ni cancelada)
-        const daysRemaining = calculateDaysRemaining();
-        const hasActiveSubscription = subscriptionStatus?.subscription_details?.status === 'active' && 
-                                      daysRemaining > 0;
-
-        console.log('📊 Verificación de suscripción:');
-        console.log('  - Status:', subscriptionStatus?.subscription_details?.status);
-        console.log('  - Días restantes:', daysRemaining);
-        console.log('  - Tiene suscripción activa?', hasActiveSubscription);
-
-        if (hasActiveSubscription) {
-            console.log('⛔ Bloqueado: Ya tiene suscripción activa');
-            setError('Ya tienes una suscripción activa. Espera a que venza para adquirir un nuevo plan.');
+        // Verificar si ya tiene una suscripción activa
+        if (subscriptionStatus?.active || subscriptionStatus?.subscription_details?.status === 'active') {
+            setError('Ya tienes una suscripción activa. No puedes adquirir otra mientras tengas una vigente.');
             return;
         }
 
         try {
-            setProcessingCheckout(planId); // Guardar el planId que está procesando
+            setProcessingCheckout(planId);
             setError(null);
-            
-            console.log('✅ Permitido: Creando checkout session...');
-            console.log('Plan ID:', planId);
             
             const data = await subscriptionService.createCheckoutSession(planId);
             
-            // Redirigir a Stripe Checkout - el backend retorna checkout_url
+            // Redirigir a Stripe Checkout
             if (data.checkout_url) {
-                console.log('🔗 Redirigiendo a Stripe:', data.checkout_url);
                 window.location.href = data.checkout_url;
             } else {
-                console.error('❌ No se recibió checkout_url del backend');
                 setError('No se pudo crear la sesión de pago.');
             }
         } catch (err) {
-            console.error('❌ Error al crear sesión de checkout:', err);
-            console.error('Response data:', err.response?.data);
-            console.error('Status code:', err.response?.status);
-            
-            // Mensajes de error más específicos
-            const errorMessage = err.response?.data?.message || err.response?.data?.error;
-            
-            if (errorMessage) {
-                setError(errorMessage);
-            } else if (err.response?.status === 500) {
-                setError('Error al procesar la solicitud. Intenta nuevamente o contacta al administrador.');
-            } else if (err.response?.status === 400) {
-                setError('Solicitud inválida. Verifica los datos del plan.');
-            } else {
-                setError('Error al procesar tu solicitud. Intenta nuevamente.');
-            }
+            console.error('Error al procesar suscripción:', err);
+            const errorMessage = err.response?.data?.message || err.response?.data?.error || 'Error al procesar tu solicitud. Intenta nuevamente.';
+            setError(errorMessage);
         } finally {
-            setProcessingCheckout(null); // Limpiar el estado
+            setProcessingCheckout(null);
         }
     }
 
@@ -180,11 +146,14 @@ export function Subscription() {
 
     function formatDate(dateString) {
         if (!dateString) return '';
-        const date = new Date(dateString);
+        // Si la fecha viene en formato YYYY-MM-DD, añadir 'T00:00:00' para evitar problemas de zona horaria
+        const dateStr = dateString.includes('T') ? dateString : `${dateString}T00:00:00`;
+        const date = new Date(dateStr);
         return date.toLocaleDateString('es-ES', { 
             year: 'numeric', 
             month: 'long', 
-            day: 'numeric' 
+            day: 'numeric',
+            timeZone: 'UTC'
         });
     }
 
@@ -202,9 +171,7 @@ export function Subscription() {
             <div className="max-w-6xl mx-auto">
                 {/* Header */}
                 <div className="text-center mb-12">
-                    <div className="flex items-center justify-center mb-4">
-                        <FaBolt className="text-5xl text-yellow-500" />
-                    </div>
+                    
                     <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
                         {subscriptionStatus?.active || subscriptionStatus?.subscription_details?.status === 'active'
                             ? 'Tu Suscripción Premium' 
@@ -220,14 +187,35 @@ export function Subscription() {
                 {/* Vista para USUARIOS SUSCRITOS */}
                 {subscriptionStatus?.active || subscriptionStatus?.subscription_details?.status === 'active' ? (
                     <div className="max-w-3xl mx-auto">
+                        {/* Mensaje de información */}
+                        {error && (
+                            <div className="mb-8 p-4 bg-yellow-100 dark:bg-yellow-900 border border-yellow-400 text-yellow-700 dark:text-yellow-100 rounded-lg">
+                                <div className="flex items-start gap-2">
+                                    <span className="text-yellow-500">ℹ️</span>
+                                    <div className="flex-1">
+                                        <p className="font-semibold">Información:</p>
+                                        <p className="text-sm mt-1">{error}</p>
+                                    </div>
+                                    <motion.button 
+                                        onClick={() => setError(null)}
+                                        className="text-yellow-500 hover:text-yellow-700"
+                                        whileTap={{ scale: 0.95 }}
+                                        transition={{ duration: 0.1 }}
+                                    >
+                                        <FaTimes />
+                                    </motion.button>
+                                </div>
+                            </div>
+                        )}
+                        
                         {/* Card principal de suscripción */}
-                        <div className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl shadow-2xl p-8 text-white mb-8">
+                        <div className="bg-gradient-to-br from-blue-800 dark:from-blue-900 to-blue-500 rounded-2xl shadow-2xl p-8 text-white mb-8">
                             <div className="flex items-center justify-between mb-6">
                                 <div className="flex items-center gap-4">
-                                    <FaBolt className="text-5xl text-yellow-300" />
+                                    <FaBolt className="text-5xl text-white" />
                                     <div>
                                         <h2 className="text-3xl font-bold">{subscriptionStatus?.subscription_details?.plan_name || 'Premium'}</h2>
-                                        <p className="text-blue-100">Suscripción Activa</p>
+                                        <p className="text-blue-100 dark:text-blue-200">Suscripción Activa</p>
                                     </div>
                                 </div>
                                 <FaCheck className="text-4xl text-green-300" />
@@ -235,15 +223,15 @@ export function Subscription() {
 
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
                                 <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                                    <p className="text-blue-200 text-sm mb-2">Fecha de inicio</p>
+                                    <p className="text-blue-100 dark:text-blue-200 text-sm mb-2">Fecha de inicio</p>
                                     <p className="text-xl font-semibold">{formatDate(subscriptionStatus?.subscription_details?.start_date)}</p>
                                 </div>
                                 <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                                    <p className="text-blue-200 text-sm mb-2">Días restantes</p>
-                                    <p className="text-3xl font-bold text-yellow-300">{calculateDaysRemaining()}</p>
+                                    <p className="text-blue-100 dark:text-blue-200 text-sm mb-2">Días restantes</p>
+                                    <p className="text-3xl font-bold text-green-400">{calculateDaysRemaining()}</p>
                                 </div>
                                 <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                                    <p className="text-blue-200 text-sm mb-2">Fecha de vencimiento</p>
+                                    <p className="text-blue-100 dark:text-blue-200 text-sm mb-2">Fecha de vencimiento</p>
                                     <p className="text-xl font-semibold">{formatDate(subscriptionStatus?.subscription_details?.end_date)}</p>
                                 </div>
                             </div>
@@ -253,7 +241,7 @@ export function Subscription() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <motion.button
                                 onClick={openPlansModal}
-                                className="py-4 px-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg font-semibold transition-all shadow-lg"
+                                className="py-4 px-6 bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700 text-white rounded-lg font-semibold transition-all shadow-lg"
                                 whileTap={{ scale: 0.95 }}
                                 transition={{ duration: 0.1 }}
                             >
@@ -262,7 +250,7 @@ export function Subscription() {
                             <motion.button
                                 onClick={handleCancelSubscription}
                                 disabled={cancelling}
-                                className="py-4 px-6 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white rounded-lg font-semibold transition-all shadow-lg disabled:cursor-not-allowed"
+                                className="py-4 px-6 bg-red-700 hover:bg-red-800 dark:bg-red-800 dark:hover:bg-red-900 disabled:bg-gray-400 text-white rounded-lg font-semibold transition-all shadow-lg disabled:cursor-not-allowed"
                                 whileTap={{ scale: 0.95 }}
                                 transition={{ duration: 0.1 }}
                             >
@@ -297,7 +285,7 @@ export function Subscription() {
                         {/* Loading state */}
                         {loading ? (
                             <div className="flex items-center justify-center py-20">
-                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-700"></div>
                             </div>
                         ) : (
                             /* Plans grid */
@@ -312,7 +300,7 @@ export function Subscription() {
                                                 {plan.name}
                                             </h3>
                                             <div className="mb-6">
-                                                <span className="text-4xl font-bold text-blue-600 dark:text-blue-400">
+                                                <span className="text-4xl font-bold text-blue-600 dark:text-blue-700">
                                                     ${plan.price}
                                                 </span>
                                                 <span className="text-gray-600 dark:text-gray-400 ml-2">
@@ -323,7 +311,7 @@ export function Subscription() {
                                             <motion.button
                                                 onClick={() => handleAcquirePlan(plan.id)}
                                                 disabled={processingCheckout !== null || !isAuthenticated}
-                                                className="w-full py-3 px-6 rounded-lg font-semibold transition-colors bg-blue-600 hover:bg-blue-700 text-white cursor-pointer disabled:bg-gray-300 disabled:dark:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed"
+                                                className="w-full py-3 px-6 rounded-lg font-semibold transition-colors bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white cursor-pointer disabled:bg-gray-300 disabled:dark:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed"
                                                 whileTap={{ scale: 0.95 }}
                                                 transition={{ duration: 0.1 }}
                                             >
@@ -358,7 +346,7 @@ export function Subscription() {
                         </motion.button>
 
                         <div className="text-center mb-8">
-                            <FaBolt className="text-5xl text-yellow-500 mx-auto mb-4" />
+                            <FaBolt className="text-5xl text-white mx-auto mb-4" />
                             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
                                 Renueva tu Suscripción
                             </h2>
@@ -369,7 +357,7 @@ export function Subscription() {
 
                         {loading ? (
                             <div className="flex items-center justify-center py-20">
-                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-700"></div>
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -382,7 +370,7 @@ export function Subscription() {
                                             {plan.name}
                                         </h3>
                                         <div className="mb-6">
-                                            <span className="text-4xl font-bold text-blue-600 dark:text-blue-400">
+                                            <span className="text-4xl font-bold text-blue-600 dark:text-blue-700">
                                                 ${plan.price}
                                             </span>
                                             <span className="text-gray-600 dark:text-gray-400 ml-2">
@@ -395,7 +383,7 @@ export function Subscription() {
                                                 handleAcquirePlan(plan.id);
                                             }}
                                             disabled={processingCheckout !== null}
-                                            className="w-full py-3 px-6 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg font-semibold transition-colors"
+                                            className="w-full py-3 px-6 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 disabled:bg-gray-400 text-white rounded-lg font-semibold transition-colors"
                                             whileTap={{ scale: 0.95 }}
                                             transition={{ duration: 0.1 }}
                                         >
@@ -419,7 +407,7 @@ export function Subscription() {
                         </motion.button>
 
                         <div className="text-center mb-6">
-                            <FaBolt className="text-5xl text-yellow-500 mx-auto mb-4" />
+                            <FaBolt className="text-5xl text-white mx-auto mb-4" />
                             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                                 Tu Suscripción Premium
                             </h2>
@@ -448,7 +436,7 @@ export function Subscription() {
                                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
                                     Días Restantes
                                 </p>
-                                <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                                <p className="text-3xl font-bold text-blue-600 dark:text-blue-700">
                                     {calculateDaysRemaining()} días
                                 </p>
                             </div>
@@ -467,7 +455,7 @@ export function Subscription() {
                             onClick={() => {
                                 closeModal();
                             }}
-                            className="w-full py-3 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
+                            className="w-full py-3 px-6 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white rounded-lg font-semibold transition-colors"
                             whileTap={{ scale: 0.95 }}
                             transition={{ duration: 0.1 }}
                         >

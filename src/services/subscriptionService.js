@@ -12,6 +12,74 @@ export const subscriptionService = {
     }
   },
 
+  // Obtener todos los planes (con autenticación)
+  getAllPlans: async () => {
+    try {
+      const res = await api.get('/subscriptions/all-plans');
+      return res.data;
+    } catch (err) {
+      console.error('Error al obtener todos los planes:', err);
+      throw err;
+    }
+  },
+
+  // Crear un plan
+  createPlan: async (planData) => {
+    try {
+      const res = await api.post('/subscriptions/plans', planData);
+      return res.data;
+    } catch (err) {
+      console.error('Error al crear plan:', err);
+      throw err;
+    }
+  },
+
+  // Eliminar un plan
+  deletePlan: async (planId) => {
+    try {
+      const res = await api.delete(`/subscriptions/plans/${planId}`);
+      return res.data;
+    } catch (err) {
+      console.error('Error al eliminar plan:', err);
+      throw err;
+    }
+  },
+
+
+
+  // Obtener una suscripción específica
+  getSubscription: async (subscriptionId) => {
+    try {
+      const res = await api.get(`/subscriptions/${subscriptionId}`);
+      return res.data;
+    } catch (err) {
+      console.error('Error al obtener suscripción:', err);
+      throw err;
+    }
+  },
+
+  // Actualizar una suscripción (renovar/extender)
+  updateSubscription: async (subscriptionId, updateData) => {
+    try {
+      const res = await api.put(`/subscriptions/${subscriptionId}`, updateData);
+      return res.data;
+    } catch (err) {
+      console.error('Error al actualizar suscripción:', err);
+      throw err;
+    }
+  },
+
+  // Eliminar una suscripción
+  deleteSubscription: async (subscriptionId) => {
+    try {
+      const res = await api.delete(`/subscriptions/${subscriptionId}`);
+      return res.data;
+    } catch (err) {
+      console.error('Error al eliminar suscripción:', err);
+      throw err;
+    }
+  },
+
   // Crear sesión de checkout
   createCheckoutSession: async (planId) => {
     try {
@@ -74,6 +142,17 @@ export const subscriptionService = {
         throw silentError;
       }
       
+      throw err;
+    }
+  },
+
+  // Marcar suscripciones expiradas (admin/cron)
+  markExpiredSubscriptions: async () => {
+    try {
+      const res = await api.post('/subscriptions/mark-expired');
+      return res.data;
+    } catch (err) {
+      console.error('Error al marcar suscripciones expiradas:', err);
       throw err;
     }
   }

@@ -552,7 +552,7 @@ export function RegisterPartTwo() {
               disabled={loading}
               whileTap={{ scale: 0.95 }}
               transition={{ duration: 0.1 }}
-              className="w-1/2 py-2 bg-blue-500 text-white rounded-3xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-1/2 py-2 bg-blue-600 text-white rounded-3xl hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Registrando...' : 'Registrarse'}
             </motion.button>

@@ -9,8 +9,6 @@ import { ToggleDarkMode } from './components/ToggleDarkMode';
 import { AuthButtons } from './components/AuthButtons';
 import { UserButtons } from './components/UserButtons';
 import { publicRoutes, userRoutes, adminRoutes, authRoutes } from '../../routes/routes';
-import { FaBolt } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
 
 export function Navbar() {
   const { isAuthenticated, user } = useAuth();

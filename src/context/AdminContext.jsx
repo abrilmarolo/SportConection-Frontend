@@ -12,6 +12,7 @@ export function AdminProvider({ children }) {
     users: [],
     sports: [],
     locations: [],
+    plans: [],
     statistics: null
   });
 
@@ -251,6 +252,57 @@ export function AdminProvider({ children }) {
     }
   };
 
+  // Plans Management
+  const getAllPlans = async () => {
+    if (!isAdmin) return;
+    try {
+      setLoading(true);
+      const plans = await adminService.getAllPlans();
+      setAdminData(prev => ({ ...prev, plans }));
+      return plans;
+    } catch (error) {
+      setError(error.message);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createPlan = async (planData) => {
+    if (!isAdmin) return;
+    try {
+      setLoading(true);
+      const newPlan = await adminService.createPlan(planData);
+      setAdminData(prev => ({
+        ...prev,
+        plans: [...prev.plans, newPlan]
+      }));
+      return newPlan;
+    } catch (error) {
+      setError(error.message);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deletePlan = async (id) => {
+    if (!isAdmin) return;
+    try {
+      setLoading(true);
+      await adminService.deletePlan(id);
+      setAdminData(prev => ({
+        ...prev,
+        plans: prev.plans.filter(plan => plan.id !== id)
+      }));
+    } catch (error) {
+      setError(error.message);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const clearError = () => setError(null);
 
   const value = {
@@ -271,7 +323,10 @@ export function AdminProvider({ children }) {
     createUser,
     updateUser,
     deleteUser,
-    changeUserRole
+    changeUserRole,
+    getAllPlans,
+    createPlan,
+    deletePlan
   };
 
   return (

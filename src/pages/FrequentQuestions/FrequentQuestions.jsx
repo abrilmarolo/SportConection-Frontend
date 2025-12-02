@@ -47,7 +47,7 @@ export function FrequentQuestions() {
         </h1>
         <div className="space-y-4">
           {questions.map((q, idx) => (
-            <div
+            <motion.div
               key={idx}
               className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700"
             >
@@ -58,11 +58,11 @@ export function FrequentQuestions() {
                 <span className="text-lg font-medium text-gray-800 dark:text-white">{q.question}</span>
                 <motion.svg
                   className="w-5 h-5 text-gray-500 dark:text-gray-300"
-                  animate={{ rotate: openIndex === idx ? 180 : 0 }}
-                  transition={{ duration: 0.3 }}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
+                  animate={{ rotate: openIndex === idx ? 180 : 0 }}
+                  transition={{ duration: 0.3 }}
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </motion.svg>
@@ -71,9 +71,9 @@ export function FrequentQuestions() {
                 {openIndex === idx && (
                   <motion.div
                     initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
+                    animate={{ height: "auto", opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                    transition={{ duration: 0.3 }}
                     className="overflow-hidden"
                   >
                     <div className="px-6 pb-4 text-gray-700 dark:text-gray-300">
@@ -82,7 +82,7 @@ export function FrequentQuestions() {
                   </motion.div>
                 )}
               </AnimatePresence>
-            </div>
+            </motion.div>
           ))}
         </div>
       </section>

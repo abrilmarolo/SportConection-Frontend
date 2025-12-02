@@ -67,11 +67,14 @@ export function SubscriptionSuccess() {
 
     function formatDate(dateString) {
         if (!dateString) return '';
-        const date = new Date(dateString);
+        // Si la fecha viene en formato YYYY-MM-DD, añadir 'T00:00:00' para evitar problemas de zona horaria
+        const dateStr = dateString.includes('T') ? dateString : `${dateString}T00:00:00`;
+        const date = new Date(dateStr);
         return date.toLocaleDateString('es-ES', { 
             year: 'numeric', 
             month: 'long', 
-            day: 'numeric' 
+            day: 'numeric',
+            timeZone: 'UTC'
         });
     }
 
@@ -104,7 +107,7 @@ export function SubscriptionSuccess() {
                     </p>
                     <button
                         onClick={() => navigate('/Suscripcion')}
-                        className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
+                        className="px-6 py-3 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white rounded-lg font-semibold transition-colors"
                     >
                         Volver a Suscripciones
                     </button>
@@ -114,12 +117,12 @@ export function SubscriptionSuccess() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
             <div className="max-w-2xl w-full">
                 {/* Tarjeta de éxito */}
                 <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden">
                     {/* Header con animación */}
-                    <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-8 text-center relative overflow-hidden">
+                    <div className="bg-gradient-to-r from-blue-800 to-blue-500 dark:from-blue-900 dark:to-blue-600 p-8 text-center relative overflow-hidden">
                         <div className="absolute inset-0 opacity-10">
                             <div className="absolute transform rotate-45 bg-white w-32 h-32 -top-10 -right-10"></div>
                             <div className="absolute transform -rotate-45 bg-white w-24 h-24 -bottom-10 -left-10"></div>
@@ -127,7 +130,7 @@ export function SubscriptionSuccess() {
                         
                         <div className="relative z-10">
                             <div className="inline-block animate-bounce mb-4">
-                                <FaCheckCircle className="text-7xl text-white" />
+                                <FaCheckCircle className="text-7xl text-green-400" />
                             </div>
                             <h1 className="text-4xl font-bold text-white mb-2">
                                 ¡Pago Exitoso!
@@ -141,9 +144,9 @@ export function SubscriptionSuccess() {
                     {/* Contenido */}
                     <div className="p-8">
                         <div className="text-center mb-8">
-                            <div className="inline-flex items-center gap-2 bg-yellow-100 dark:bg-yellow-900 px-4 py-2 rounded-full mb-4">
-                                <FaBolt className="text-yellow-600 dark:text-yellow-400" />
-                                <span className="font-semibold text-yellow-800 dark:text-yellow-200">
+                            <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full mb-4">
+                                <FaBolt className="text-white" />
+                                <span className="font-semibold text-white">
                                     Premium Activado
                                 </span>
                             </div>
@@ -187,17 +190,12 @@ export function SubscriptionSuccess() {
                         {/* Botón de acción */}
                         <button
                             onClick={() => navigate('/')}
-                            className="w-full py-3 px-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg font-semibold transition-all transform hover:scale-105"
+                            className="w-full py-3 px-6 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white rounded-lg font-semibold transition-all transform hover:scale-105"
                         >
                             Ir al Inicio
                         </button>
 
-                        {/* Mensaje adicional */}
-                        <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                            <p className="text-sm text-blue-800 dark:text-blue-200 text-center">
-                                📧 Te hemos enviado un correo con los detalles de tu suscripción
-                            </p>
-                        </div>
+                        
                     </div>
                 </div>
 

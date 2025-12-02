@@ -156,7 +156,7 @@ export function Profile() {
             {/* Sección de Avatar de Admin */}
             <div className="flex flex-col items-center space-y-6">
               <div className="relative">
-                <div className="w-40 h-40 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-700 flex items-center justify-center border-4 border-orange-200 dark:border-orange-800">
+                <div className="w-40 h-40 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-700 flex items-center justify-center border-4 border-blue-500">
                     <span className="text-4xl font-bold">A</span>
                   </div>
                 

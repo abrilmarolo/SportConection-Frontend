@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useAuth } from '../../context/AuthContext';
 import { matchService } from '../../services/matchService';
-import { FaInstagram, FaTwitter } from 'react-icons/fa';
+import { FaInstagram, FaTwitter, FaTimes, FaStar } from 'react-icons/fa';
 
 export function Match() {
     const { isAuthenticated } = useAuth();
@@ -556,7 +556,7 @@ export function Match() {
                             aria-label="Dislike"
                             disabled={cards.length === 0 || loading}
                         >
-                            ✖
+                            <FaTimes className="text-xl" />
                         </button>
                         <button 
                             onClick={() => handleAction('like')} 
@@ -564,7 +564,7 @@ export function Match() {
                             aria-label="Like"
                             disabled={cards.length === 0 || loading}
                         >
-                            ❤
+                            <FaStar className="text-xl" />
                         </button>
                     </div>
 
