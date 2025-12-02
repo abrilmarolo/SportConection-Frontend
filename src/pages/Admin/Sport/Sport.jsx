@@ -10,6 +10,9 @@ export function Sport() {
     name: '',
     description: '',
   });
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     const fetchSports = async () => {
@@ -61,6 +64,22 @@ export function Sport() {
     }
   };
 
+  // Filtrar deportes por búsqueda
+  const filteredSports = adminData.sports.filter(sport =>
+    sport.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Calcular paginación
+  const totalPages = Math.ceil(filteredSports.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentSports = filteredSports.slice(startIndex, endIndex);
+
+  // Reset a página 1 cuando cambia la búsqueda
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
   if (!isAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -88,6 +107,21 @@ export function Sport() {
             </button>
           </div>
 
+          <div className="mb-4 relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            <input
+              type="text"
+              placeholder="Buscar por nombre de deporte..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            />
+          </div>
+
           {error && (
             <div className="mb-4 p-4 bg-red-50 border border-red-200 text-red-600 rounded-lg">
               {error}
@@ -113,7 +147,7 @@ export function Sport() {
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                  {adminData.sports.map((sport) => (
+                  {currentSports.map((sport) => (
                     <tr key={sport.id}>
                       <td className="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-white">
                         {editId === sport.id ? (
@@ -165,6 +199,34 @@ export function Sport() {
                   ))}
                 </tbody>
               </table>
+
+              {/* Paginación */}
+              {totalPages > 1 && (
+                <div className="mt-4 flex items-center justify-between">
+                  <div className="text-sm text-gray-700 dark:text-gray-300">
+                    Mostrando {startIndex + 1} a {Math.min(endIndex, filteredSports.length)} de {filteredSports.length} deportes
+                  </div>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                      className="px-3 py-1 border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700 dark:text-white"
+                    >
+                      Anterior
+                    </button>
+                    <span className="px-3 py-1 text-gray-700 dark:text-gray-300">
+                      Página {currentPage} de {totalPages}
+                    </span>
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                      disabled={currentPage === totalPages}
+                      className="px-3 py-1 border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700 dark:text-white"
+                    >
+                      Siguiente
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

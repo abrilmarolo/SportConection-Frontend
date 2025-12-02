@@ -1,7 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 export function Footer() {
+  const { isAuthenticated, user } = useAuth();
+  const isAdmin = user?.role === 'admin';
+
   return (
     <footer className=" py-8 bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 dark:border-t-1 dark:border-gray-700 flex justify-center w-full  ">
       <div className="container mx-auto px-4 flex flex-col items-center">
@@ -14,15 +18,56 @@ export function Footer() {
           <div>
             <h4 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">Enlaces</h4>
             <ul className="space-y-2">
-              <li>
-                <Link to="/AcercaDeNosotros" className="hover:text-blue-500 dark:hover:text-blue-400">Acerca de</Link>
-              </li>
-              <li>
-                <Link to="/Contacto" className="hover:text-blue-500 dark:hover:text-blue-400">Contacto</Link>
-              </li>
-              <li>
-                <Link to="/PreguntasFrecuentes" className="hover:text-blue-500 dark:hover:text-blue-400">Preguntas Frecuentes</Link>
-              </li>
+              {/* Enlaces solo para NO autenticados */}
+              {!isAuthenticated && (
+                <>
+                  <li>
+                    <Link to="/AcercaDeNosotros" className="hover:text-blue-500 dark:hover:text-blue-400">Acerca de</Link>
+                  </li>
+                  <li>
+                    <Link to="/Contacto" className="hover:text-blue-500 dark:hover:text-blue-400">Contacto</Link>
+                  </li>
+                  <li>
+                    <Link to="/PreguntasFrecuentes" className="hover:text-blue-500 dark:hover:text-blue-400">Preguntas Frecuentes</Link>
+                  </li>
+                </>
+              )}
+              
+              {/* Enlaces solo para usuarios autenticados */}
+              {isAuthenticated && !isAdmin && (
+                <>
+                  <li>
+                    <Link to="/Publicaciones" className="hover:text-blue-500 dark:hover:text-blue-400">Publicaciones</Link>
+                  </li>
+                  <li>
+                    <Link to="/Match" className="hover:text-blue-500 dark:hover:text-blue-400">Match</Link>
+                  </li>
+                  <li>
+                    <Link to="/Chat" className="hover:text-blue-500 dark:hover:text-blue-400">Chat</Link>
+                  </li>
+                  <li>
+                    <Link to="/Mapa" className="hover:text-blue-500 dark:hover:text-blue-400">Mapa</Link>
+                  </li>
+                  <li>
+                    <Link to="/Perfil" className="hover:text-blue-500 dark:hover:text-blue-400">Mi Perfil</Link>
+                  </li>
+                </>
+              )}
+              
+              {/* Enlaces solo para admin */}
+              {isAdmin && (
+                <>
+                  <li>
+                    <Link to="/Admin/Usuarios" className="hover:text-blue-500 dark:hover:text-blue-400">Usuarios</Link>
+                  </li>
+                  <li>
+                    <Link to="/Admin/Deportes" className="hover:text-blue-500 dark:hover:text-blue-400">Deportes</Link>
+                  </li>
+                  <li>
+                    <Link to="/Admin/Ubicaciones" className="hover:text-blue-500 dark:hover:text-blue-400">Ubicaciones</Link>
+                  </li>
+                </>
+              )}
             </ul>
           </div>
           

@@ -195,18 +195,14 @@ export function Register() {
           </div>
 
           <div className="w-full flex justify-center">
-            {/* Temporalmente deshabilitado - configurar origins en Google Cloud Console */}
-            {/* <GoogleLogin
+            <GoogleLogin
               onSuccess={handleGoogleSuccess}
               onError={handleGoogleError}
               text="signup_with"
               shape="pill"
               size="large"
               width="100%"
-            /> */}
-            <div className="w-full p-3 text-center text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 rounded-lg">
-              Google Sign-In temporalmente deshabilitado. Configura los origins autorizados en Google Cloud Console.
-            </div>
+            />
           </div>
 
           <button
