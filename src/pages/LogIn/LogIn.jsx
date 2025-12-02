@@ -4,7 +4,7 @@ import { FaEye, FaEyeSlash,  FaExclamationTriangle } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import { GoogleLogin } from '@react-oauth/google';
 import { motion } from 'framer-motion';
-import { toast } from 'react-toastify';
+
 
 export function LogIn() {
   const navigate = useNavigate();
@@ -30,16 +30,9 @@ export function LogIn() {
     clearError();
 
     try {
-      await login(credentials);
-      console.log('Login exitoso en componente');
-      toast.success('¡Inicio de sesión exitoso! Bienvenido', {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
+      const result = await login(credentials);
+      console.log('Login exitoso en componente', result);
+      
       // La navegación se maneja en el AuthContext
     } catch (error) {
       console.error('Error en login:', error);
@@ -67,16 +60,9 @@ export function LogIn() {
       clearError();
       
       // El token viene en credentialResponse.credential
-      await login({ googleToken: credentialResponse.credential });
-      console.log('Google login exitoso');
-      toast.success('¡Inicio de sesión con Google exitoso! Bienvenido', {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
+      const result = await login({ googleToken: credentialResponse.credential });
+      console.log('Google login exitoso', result);
+      
     } catch (error) {
       console.error('Error en Google login:', error);
       setError(error.message || 'Error al iniciar sesión con Google');

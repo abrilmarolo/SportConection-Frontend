@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAdmin } from '../../../context/AdminContext';
 import { motion } from 'framer-motion';
+import { toast } from 'react-toastify';
 
 export function Sport() {
   const navigate = useNavigate();
@@ -34,8 +35,10 @@ export function Sport() {
       try {
         await deleteSport(id);
         await getAllSports();
+        toast.success('¡Deporte eliminado exitosamente!');
       } catch (err) {
         console.error('Error al eliminar deporte:', err);
+        toast.error('Error al eliminar el deporte');
       }
     }
   };
@@ -60,8 +63,10 @@ export function Sport() {
       await updateSport(editId, editData);
       await getAllSports();
       cancelEdit();
+      toast.success('¡Deporte actualizado exitosamente!');
     } catch (err) {
       console.error('Error al modificar deporte:', err);
+      toast.error('Error al actualizar el deporte');
     }
   };
 

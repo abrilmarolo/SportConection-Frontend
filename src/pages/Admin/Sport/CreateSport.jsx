@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAdmin } from '../../../context/AdminContext';
 import { motion } from 'framer-motion';
+import { toast } from 'react-toastify';
 
 export function CreateSport() {
   const navigate = useNavigate();
@@ -20,9 +21,11 @@ export function CreateSport() {
 
     try {
       await createSport(sportData);
+      toast.success('¡Deporte creado exitosamente!');
       navigate('/Deportes');
     } catch (err) {
       console.error('Error al crear deporte:', err);
+      toast.error('Error al crear el deporte');
     }
   };
 

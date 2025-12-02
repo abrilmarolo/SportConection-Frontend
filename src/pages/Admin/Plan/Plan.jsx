@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAdmin } from '../../../context/AdminContext';
 import { motion } from 'framer-motion';
+import { toast } from 'react-toastify';
 
 export function Plan() {
   const navigate = useNavigate();
@@ -28,8 +29,10 @@ export function Plan() {
     if (window.confirm('¿Estás seguro de eliminar este plan?')) {
       try {
         await deletePlan(id);
+        toast.success('¡Plan eliminado exitosamente!');
       } catch (err) {
         console.error('Error al eliminar plan:', err);
+        toast.error('Error al eliminar el plan');
       }
     }
   };

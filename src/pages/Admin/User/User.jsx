@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAdmin } from '../../../context/AdminContext';
 import { motion } from 'framer-motion';
+import { toast } from 'react-toastify';
 
 export function User() {
   const navigate = useNavigate();
@@ -35,8 +36,10 @@ export function User() {
       try {
         await deleteUser(id);
         await getAllUsers();
+        toast.success('¡Usuario eliminado exitosamente!');
       } catch (err) {
         console.error('Error al eliminar usuario:', err);
+        toast.error('Error al eliminar el usuario');
       }
     }
   };
@@ -68,8 +71,10 @@ export function User() {
       await updateUser(editId, updateFields);
       await getAllUsers();
       cancelEdit();
+      toast.success('¡Usuario actualizado exitosamente!');
     } catch (err) {
       console.error('Error al modificar usuario:', err);
+      toast.error('Error al actualizar el usuario');
     }
   };
 

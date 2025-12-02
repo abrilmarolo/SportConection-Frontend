@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAdmin } from '../../../context/AdminContext';
 import { motion } from 'framer-motion';
+import { toast } from 'react-toastify';
 
 export function CreateLocation() {
   const navigate = useNavigate();
@@ -21,9 +22,11 @@ export function CreateLocation() {
 
     try {
       await createLocation(locationData);
+      toast.success('¡Ubicación creada exitosamente!');
       navigate('/Ubicacion');
     } catch (err) {
       console.error('Error al crear ubicación:', err);
+      toast.error('Error al crear la ubicación');
     }
   };
 

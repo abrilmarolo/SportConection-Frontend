@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAdmin } from '../../../context/AdminContext';
 import { motion } from 'framer-motion';
+import { toast } from 'react-toastify';
 
 export function CreatePlan() {
   const navigate = useNavigate();
@@ -23,9 +24,11 @@ export function CreatePlan() {
         name: planData.name,
         price: parseFloat(planData.price)
       });
+      toast.success('¡Plan creado exitosamente!');
       navigate('/Plan');
     } catch (err) {
       console.error('Error al crear plan:', err);
+      toast.error('Error al crear el plan');
     }
   };
 

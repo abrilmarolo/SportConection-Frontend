@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAdmin } from '../../../context/AdminContext';
 import { motion } from 'framer-motion';
+import { toast } from 'react-toastify';
 
 export function Location() {
   const navigate = useNavigate();
@@ -35,8 +36,10 @@ export function Location() {
       try {
         await deleteLocation(id);
         await getAllLocations();
+        toast.success('¡Ubicación eliminada exitosamente!');
       } catch (err) {
         console.error('Error al eliminar ubicación:', err);
+        toast.error('Error al eliminar la ubicación');
       }
     }
   };
@@ -62,8 +65,10 @@ export function Location() {
       await updateLocation(editId, editData);
       await getAllLocations();
       cancelEdit();
+      toast.success('¡Ubicación actualizada exitosamente!');
     } catch (err) {
       console.error('Error al modificar ubicación:', err);
+      toast.error('Error al actualizar la ubicación');
     }
   };
 
