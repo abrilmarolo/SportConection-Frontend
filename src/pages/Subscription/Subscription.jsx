@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { FaBolt, FaTimes, FaCheck } from 'react-icons/fa';
 import Modal from '../../components/Modal/Modal';
 import { motion } from 'framer-motion';
+import Swal from 'sweetalert2';
 
 export function Subscription() {
     const { isAuthenticated, loading: authLoading } = useAuth();
@@ -50,15 +51,15 @@ export function Subscription() {
             console.log('✅ Estado de suscripción cargado:', status);
             setSubscriptionStatus(status);
         } catch (err) {
+            // Si el backend devuelve 404 o 500, significa que no hay suscripción activa
             const isNoSubscription = err.response?.status === 404 || err.response?.status === 500;
 
             if (isNoSubscription) {
-                // Usuario sin suscripción → dejamos null
-                console.log('ℹ️ Usuario sin suscripción activa (error esperado)');
+                // Usuario sin suscripción → dejamos null para permitir adquirir planes
+                console.log('ℹ️ Usuario sin suscripción activa');
                 setSubscriptionStatus(null);
             } else {
                 console.error('❌ Error inesperado al cargar estado de suscripción:', err);
-                setError('Error al cargar el estado de tu suscripción.');
             }
         }
     }
@@ -70,8 +71,8 @@ export function Subscription() {
             return;
         }
 
-        // Verificar si ya tiene una suscripción activa
-        if (subscriptionStatus?.active || subscriptionStatus?.subscription_details?.status === 'active') {
+        // Verificar si ya tiene una suscripción activa (solo si subscriptionStatus existe y está activa)
+        if (subscriptionStatus?.active === true || subscriptionStatus?.subscription_details?.status === 'active') {
             setError('Ya tienes una suscripción activa. No puedes adquirir otra mientras tengas una vigente.');
             return;
         }
@@ -114,7 +115,19 @@ export function Subscription() {
     }
 
     async function handleCancelSubscription() {
-        if (!window.confirm('¿Estás seguro de que deseas cancelar tu suscripción? Perderás todos los beneficios premium.')) {
+        const result = await Swal.fire({
+            title: '¿Cancelar tu suscripción?',
+            text: 'Perderás todos los beneficios premium al cancelar',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#EF4444',
+            cancelButtonColor: '#6B7280',
+            confirmButtonText: 'Sí, cancelar',
+            cancelButtonText: 'No, mantener',
+            focusCancel: true
+        });
+
+        if (!result.isConfirmed) {
             return;
         }
 
@@ -126,7 +139,13 @@ export function Subscription() {
             // Recargar el estado de suscripción
             await loadSubscriptionStatus();
             
-            alert('Tu suscripción ha sido cancelada exitosamente.');
+            await Swal.fire({
+                title: '¡Suscripción cancelada!',
+                text: 'Tu suscripción ha sido cancelada exitosamente',
+                icon: 'success',
+                confirmButtonColor: '#3B82F6',
+                confirmButtonText: 'Entendido'
+            });
         } catch (err) {
             console.error('Error al cancelar suscripción:', err);
             setError(err.response?.data?.message || 'Error al cancelar la suscripción. Intenta nuevamente.');

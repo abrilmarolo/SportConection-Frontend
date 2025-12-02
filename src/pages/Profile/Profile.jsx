@@ -5,6 +5,7 @@ import { profilePhotoService } from '../../services/profilePhotoService';
 import { FaEnvelope, FaPhone, FaInstagram, FaTwitter } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import Swal from 'sweetalert2';
 
 export function Profile() {
   const { isAuthenticated, user, getMyProfile, loading, authError, deleteProfile } = useAuth();
@@ -61,7 +62,18 @@ export function Profile() {
   };
 
   const handlePhotoDelete = async () => {
-    if (!window.confirm('¿Estás seguro de que quieres eliminar tu foto de perfil?')) {
+    const result = await Swal.fire({
+      title: '¿Eliminar foto de perfil?',
+      text: 'Esta acción eliminará tu foto actual',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3B82F6',
+      cancelButtonColor: '#EF4444',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    });
+
+    if (!result.isConfirmed) {
       return;
     }
 
@@ -87,12 +99,20 @@ export function Profile() {
   };
 
   const handleDeleteProfile = async () => {
-    // Confirmación para una acción tan crítica
-    const confirm = window.confirm(
-      'ADVERTENCIA: Esta acción eliminará permanentemente tu perfil y toda tu información.\n\n¿Estás completamente seguro de que quieres continuar?'
-    );
+    // Primera confirmación
+    const result = await Swal.fire({
+      title: '¿Eliminar tu cuenta?',
+      html: '<strong>ADVERTENCIA:</strong> Esta acción eliminará permanentemente tu perfil y toda tu información.<br><br>¿Estás completamente seguro de que quieres continuar?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#EF4444',
+      cancelButtonColor: '#6B7280',
+      confirmButtonText: 'Sí, eliminar mi cuenta',
+      cancelButtonText: 'Cancelar',
+      focusCancel: true
+    });
     
-    if (!confirm) return;
+    if (!result.isConfirmed) return;
 
     try {
       setProfileDeleting(true);

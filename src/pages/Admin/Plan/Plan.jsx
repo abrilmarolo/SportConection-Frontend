@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAdmin } from '../../../context/AdminContext';
 import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
+import Swal from 'sweetalert2';
 
 export function Plan() {
   const navigate = useNavigate();
@@ -26,7 +27,18 @@ export function Plan() {
   }, [isAdmin]);
 
   const handleDelete = async (id) => {
-    if (window.confirm('¿Estás seguro de eliminar este plan?')) {
+    const result = await Swal.fire({
+      title: '¿Estás seguro?',
+      text: 'Esta acción eliminará el plan permanentemente',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3B82F6',
+      cancelButtonColor: '#EF4444',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    });
+
+    if (result.isConfirmed) {
       try {
         await deletePlan(id);
         toast.success('¡Plan eliminado exitosamente!');

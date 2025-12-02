@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAdmin } from '../../../context/AdminContext';
 import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
+import Swal from 'sweetalert2';
 
 export function Location() {
   const navigate = useNavigate();
@@ -32,7 +33,18 @@ export function Location() {
   }, [isAdmin]);
 
   const handleDelete = async (id) => {
-    if (window.confirm('¿Estás seguro de eliminar esta ubicación?')) {
+    const result = await Swal.fire({
+      title: '¿Estás seguro?',
+      text: 'Esta acción eliminará la ubicación permanentemente',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3B82F6',
+      cancelButtonColor: '#EF4444',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    });
+
+    if (result.isConfirmed) {
       try {
         await deleteLocation(id);
         await getAllLocations();
