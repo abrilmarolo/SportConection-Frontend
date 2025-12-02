@@ -5,6 +5,8 @@ import { AuthProvider } from "./context/AuthContext";
 import { AdminProvider } from "./context/AdminContext";
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { routes } from "./routes/routes";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import './App.css'
 
 function App() {
@@ -29,7 +31,7 @@ function App() {
               </div>
             </AdminProvider>
           </AuthProvider>
-          
+          <ToastContainer />
         </BrowserRouter>
       </GoogleOAuthProvider>
     </>

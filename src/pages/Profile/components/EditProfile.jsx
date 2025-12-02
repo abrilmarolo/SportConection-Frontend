@@ -5,6 +5,7 @@ import { locationService } from '../../../services/locationService';
 import { sportService } from '../../../services/sportService';
 import { profilePhotoService } from '../../../services/profilePhotoService';
 import { motion } from 'framer-motion';
+import { toast } from 'react-toastify';
 
 export function EditProfile() {
   const navigate = useNavigate();
@@ -62,7 +63,15 @@ export function EditProfile() {
       // recargar perfil desde backend para obtener nueva foto y valores normalizados
       const data = await authService.getMyProfile();
       setProfile(data.profile || {});
-      setSuccess('Foto subida correctamente');
+      
+      toast.success('¡Foto subida correctamente!', {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true
+      });
       
       // Disparar evento personalizado para actualizar la navbar
       window.dispatchEvent(new CustomEvent('profilePhotoUpdated'));
@@ -114,7 +123,15 @@ export function EditProfile() {
       // refrescar perfil y UI
       const data = await authService.getMyProfile();
       setProfile(data.profile || {});
-      setSuccess('Perfil actualizado correctamente');
+      
+      toast.success('¡Perfil actualizado correctamente!', {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true
+      });
       
       // Disparar evento personalizado para actualizar la navbar
       window.dispatchEvent(new CustomEvent('profilePhotoUpdated'));

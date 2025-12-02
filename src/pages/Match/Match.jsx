@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useAuth } from '../../context/AuthContext';
 import { matchService } from '../../services/matchService';
-import { FaInstagram, FaTwitter, FaTimes, FaStar } from 'react-icons/fa';
+import { FaInstagram, FaTwitter, FaTimes, FaStar, FaBolt, FaCheck } from 'react-icons/fa';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export function Match() {
     const { isAuthenticated } = useAuth();
@@ -11,6 +12,8 @@ export function Match() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [matchNotice, setMatchNotice] = useState(null);
+    const [showMatchModal, setShowMatchModal] = useState(false);
+    const [matchedUserName, setMatchedUserName] = useState('');
     
     // Estados para filtros
     const [profileTypeFilter, setProfileTypeFilter] = useState('');
@@ -86,43 +89,9 @@ export function Match() {
     }
 
     // Función para mostrar modal de confirmación de match
-    function showMatchModal(matchedUserName = 'tu nuevo match') {
-        // Crear y mostrar modal personalizado
-        const modalContent = `
-            <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" id="matchModal">
-                <div class="bg-white dark:bg-slate-800 rounded-lg p-6 max-w-sm mx-4 text-center">
-                    <div class="text-4xl mb-4">🎉</div>
-                    <h3 class="text-xl font-bold mb-2 text-gray-800 dark:text-white">¡Match Creado!</h3>
-                    <p class="text-gray-600 dark:text-gray-300 mb-4">
-                        Has hecho match con <strong>${matchedUserName}</strong>
-                    </p>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                        Ve a la sección de Chat para contactar a tu match
-                    </p>
-                    <div class="flex gap-2 justify-center">
-                        <button onclick="closeMatchModal()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
-                            Continuar
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        // Agregar modal al DOM
-        document.body.insertAdjacentHTML('beforeend', modalContent);
-
-        // Función global para el modal
-        window.closeMatchModal = () => {
-            const modal = document.getElementById('matchModal');
-            if (modal) modal.remove();
-        };
-
-        // Cerrar modal al hacer clic fuera
-        document.getElementById('matchModal').addEventListener('click', (e) => {
-            if (e.target.id === 'matchModal') {
-                window.closeMatchModal();
-            }
-        });
+    function displayMatchModal(userName = 'tu nuevo match') {
+        setMatchedUserName(userName);
+        setShowMatchModal(true);
     }
 
     async function sendSwipe(swipedUserId, action, userName) {
@@ -145,7 +114,7 @@ export function Match() {
                 
                 // Mostrar modal de match con el nombre del usuario
                 setTimeout(() => {
-                    showMatchModal(userName);
+                    displayMatchModal(userName);
                 }, 1000);
             }
             
@@ -568,6 +537,97 @@ export function Match() {
                         </button>
                     </div>
 
+                    {/* Match Modal with Framer Motion */}
+                    <AnimatePresence>
+                        {showMatchModal && (
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.3 }}
+                                className="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center z-50 px-4"
+                                onClick={() => setShowMatchModal(false)}
+                            >
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.8, y: 50 }}
+                                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.8, y: 50 }}
+                                    transition={{ 
+                                        type: "spring",
+                                        damping: 25,
+                                        stiffness: 300
+                                    }}
+                                    className="bg-gradient-to-br from-white to-blue-50 dark:from-slate-800 dark:to-slate-900 rounded-3xl p-10 max-w-lg w-full shadow-2xl border-2 border-blue-200 dark:border-blue-800"
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    <div className="text-center">
+                                        {/* Icono animado con fondo circular */}
+                                        <motion.div
+                                            initial={{ scale: 0, rotate: -180 }}
+                                            animate={{ scale: 1, rotate: 0 }}
+                                            transition={{ 
+                                                delay: 0.2,
+                                                type: "spring",
+                                                stiffness: 500,
+                                                damping: 15
+                                            }}
+                                            className="mx-auto mb-6 w-24 h-24 bg-gradient-to-br from-green-500 to-green-600 dark:from-green-600 dark:to-green-700 rounded-full flex items-center justify-center shadow-lg"
+                                        >
+                                            <FaStar className="text-5xl text-white" />
+                                        </motion.div>
+                                        
+                                        <motion.h3
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.3 }}
+                                            className="text-4xl font-extrabold mb-5 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-800 dark:from-blue-400 dark:to-blue-600"
+                                        >
+                                            ¡Match Creado!
+                                        </motion.h3>
+                                        
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.4 }}
+                                            className="mb-6 p-6 bg-blue-100 dark:bg-blue-900/30 rounded-xl border-2 border-blue-200 dark:border-blue-700"
+                                        >
+                                            <div className="flex items-center justify-center gap-3 mb-3">
+                                                <FaCheck className="text-2xl text-blue-600 dark:text-blue-400" />
+                                            </div>
+                                            <p className="text-xl text-gray-700 dark:text-gray-200 mb-2">
+                                                Has hecho match con
+                                            </p>
+                                            <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">
+                                                {matchedUserName}
+                                            </p>
+                                        </motion.div>
+                                        
+                                        <motion.p
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            transition={{ delay: 0.5 }}
+                                            className="text-base text-gray-600 dark:text-gray-300 mb-8 px-4"
+                                        >
+                                            ¡Felicidades! Ahora pueden chatear. Ve a la sección de <span className="font-semibold text-blue-600 dark:text-blue-400">Chat</span> para comenzar la conversación.
+                                        </motion.p>
+                                        
+                                        <motion.button
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.6 }}
+                                            whileHover={{ scale: 1.05 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={() => setShowMatchModal(false)}
+                                            className="w-full px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 dark:from-blue-600 dark:to-blue-800 text-white text-lg rounded-xl font-bold shadow-lg hover:shadow-2xl transition-shadow duration-200 flex items-center justify-center gap-2"
+                                        >
+                                            Continuar
+                                            <FaStar className="text-xl" />
+                                        </motion.button>
+                                    </div>
+                                </motion.div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                    
                 </div>
             )}

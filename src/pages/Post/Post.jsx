@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import api from '../../services/api'
 import { motion } from 'framer-motion'
+import { toast } from 'react-toastify'
 
 // Clase PostUser - Equivalente a PostUser.java
 class PostUser {
@@ -236,6 +237,15 @@ export function Post() {
       setSelectedFile(null)
       setFilePreview(null)
       
+      toast.success('¡Publicación creada exitosamente!', {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true
+      })
+      
       await loadPosts()
     } catch (err) {
       setError('Error al crear publicación')
@@ -253,6 +263,16 @@ export function Post() {
       setLoadingPosts(true)
       setError('')
       await api.delete(`/posts/${postId}`)
+      
+      toast.success('¡Publicación eliminada exitosamente!', {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true
+      })
+      
       await loadPosts()
     } catch (err) {
       setError('Error al eliminar publicación')
@@ -377,7 +397,7 @@ export function Post() {
                     value={text}
                     onChange={(e) => setText(e.target.value)}
                     placeholder="¿Qué está pasando?"
-                    className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded-lg p-2 sm:p-3 text-sm sm:text-base focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                    className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded-lg p-2 sm:p-3 text-sm sm:text-base focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:outline-none resize-none"
                     rows="3"
                     maxLength="500"
                   />
