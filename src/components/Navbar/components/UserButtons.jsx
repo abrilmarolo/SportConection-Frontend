@@ -6,6 +6,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { profileRoute } from '../../../routes/routes';
 import api from '../../../services/api';
 import { FaBolt } from 'react-icons/fa';
+import { motion } from 'framer-motion';
 
 export function UserButtons({ user }) {
   const { logout } = useAuth();
@@ -58,50 +59,62 @@ export function UserButtons({ user }) {
   return (
     <div className="flex items-center space-x-4">
       {!isAdmin && (
-        <Link
-          to="/Suscripcion"
-          className="hidden md:block ml-4 text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-          title="Suscripción Premium"
+        <motion.div
+          whileTap={{ scale: 0.95 }}
+          transition={{ duration: 0.1 }}
         >
-          <FaBolt className="text-2xl" />
-        </Link>
+          <Link
+            to="/Suscripcion"
+            className="hidden md:block ml-4 text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+            title="Suscripción Premium"
+          >
+            <FaBolt className="text-2xl" />
+          </Link>
+        </motion.div>
       )}
 
-      <Link
-        to={profileRoute.path}
-        className="flex items-center space-x-2 group"
-        title="Mi Perfil"
+      <motion.div
+        whileTap={{ scale: 0.95 }}
+        transition={{ duration: 0.1 }}
       >
-        <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 flex items-center justify-center border-2 border-gray-300 dark:border-gray-600 group-hover:border-blue-500 dark:group-hover:border-blue-400 transition-colors">
-          {profilePhoto ? (
-            <img
-              src={profilePhoto}
-              alt="Mi perfil"
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-              onError={(e) => {
-                console.log('Error loading profile image, showing fallback icon');
-                setProfilePhoto(null); // Si falla, mostrar ícono
-              }}
-            />
-          ) : (
+        <Link
+          to={profileRoute.path}
+          className="flex items-center space-x-2 group"
+          title="Mi Perfil"
+        >
+          <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 flex items-center justify-center border-2 border-gray-300 dark:border-gray-600 group-hover:border-blue-500 dark:group-hover:border-blue-400 transition-colors">
+            {profilePhoto ? (
+              <img
+                src={profilePhoto}
+                alt="Mi perfil"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                onError={(e) => {
+                  console.log('Error loading profile image, showing fallback icon');
+                  setProfilePhoto(null); // Si falla, mostrar ícono
+                }}
+              />
+            ) : (
 
-            <span className="text-lg font-bold">
-              {isAdmin ? 'A' : (profileData?.profile?.name?.[0]?.toUpperCase() || 'U')}
-            </span>
+              <span className="text-lg font-bold">
+                {isAdmin ? 'A' : (profileData?.profile?.name?.[0]?.toUpperCase() || 'U')}
+              </span>
 
-          )}
-        </div>
-      </Link>
+            )}
+          </div>
+        </Link>
+      </motion.div>
 
 
 
 
-      <button
+      <motion.button
         onClick={logout}
+        whileTap={{ scale: 0.95 }}
+        transition={{ duration: 0.1 }}
         className="px-2 py-2 text-white bg-red-600 hover:bg-red-700 rounded-lg hidden md:block cursor-pointer"
       >
         Cerrar Sesión
-      </button>
+      </motion.button>
 
 
     </div>

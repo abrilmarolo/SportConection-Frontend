@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { routes } from '../../../routes/routes';
 import { useAuth } from '../../../context/AuthContext';
 import { useAdmin } from '../../../context/AdminContext';
@@ -60,73 +61,97 @@ export function HamburgerMenu({ isOpen, setIsOpen }) {
       {isAuthenticated ? (
         <div className="flex items-center space-x-3">
           {!isAdmin && (
-            <Link
-              to="/Suscripcion"
-              className="text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-              title="Suscripción Premium"
+            <motion.div
+              whileTap={{ scale: 0.95 }}
+              transition={{ duration: 0.1 }}
             >
-              <FaBolt className="text-2xl" />
-            </Link>
+              <Link
+                to="/Suscripcion"
+                className="text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                title="Suscripción Premium"
+              >
+                <FaBolt className="text-2xl" />
+              </Link>
+            </motion.div>
           )}
           
-          <Link
-            to={profileRoute.path}
-            className="flex items-center space-x-2"
-            title="Mi Perfil"
+          <motion.div
+            whileTap={{ scale: 0.95 }}
+            transition={{ duration: 0.1 }}
           >
-            <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 flex items-center justify-center border-2 border-gray-300 dark:border-gray-600">
-              
-              {profilePhoto ? (
-                <img
-                  src={profilePhoto}
-                  alt="Mi perfil"
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    console.log('Error loading profile image in hamburger menu, showing fallback icon');
-                    setProfilePhoto(null);
-                  }}
-                />
-              ) : (
+            <Link
+              to={profileRoute.path}
+              className="flex items-center space-x-2"
+              title="Mi Perfil"
+            >
+              <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 flex items-center justify-center border-2 border-gray-300 dark:border-gray-600">
                 
-                  <span className="text-lg font-bold">
-                    {isAdmin ? 'A' : (profileData?.profile?.name?.[0]?.toUpperCase() || 'U')}
-                  </span>
-                
-              )}
-            </div>
-          </Link>
-          <button
+                {profilePhoto ? (
+                  <img
+                    src={profilePhoto}
+                    alt="Mi perfil"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      console.log('Error loading profile image in hamburger menu, showing fallback icon');
+                      setProfilePhoto(null);
+                    }}
+                  />
+                ) : (
+                  
+                    <span className="text-lg font-bold">
+                      {isAdmin ? 'A' : (profileData?.profile?.name?.[0]?.toUpperCase() || 'U')}
+                    </span>
+                  
+                )}
+              </div>
+            </Link>
+          </motion.div>
+          <motion.button
             onClick={logout}
+            whileTap={{ scale: 0.95 }}
+            transition={{ duration: 0.1 }}
             className="px-4 py-2 text-white bg-red-600 hover:bg-red-700 rounded-lg mr-2 cursor-pointer "
           >
             Cerrar Sesión
-          </button>
+          </motion.button>
         </div>
 
 
 
       ) : (
-        <Link
-          to="/Registro"
-          className='px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 rounded-lg mr-2'>
-          {registerRoute.name}
-        </Link>
+        <motion.div
+          whileTap={{ scale: 0.95 }}
+          transition={{ duration: 0.1 }}
+        >
+          <Link
+            to="/Registro"
+            className='px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 rounded-lg mr-2 block'>
+            {registerRoute.name}
+          </Link>
+        </motion.div>
       )}
 
-      <button
+      <motion.button
         onClick={() => setIsOpen(!isOpen)}
         className='text-gray-700 dark:text-white focus:outline-none'
+        whileTap={{ scale: 0.9, rotate: 90 }}
+        transition={{ duration: 0.4 }}
       >
-        {isOpen ? (
-          <svg className="h-6 w-6 cur cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        ) : (
-          <svg className="h-6 w-6 cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        )}
-      </button>
+        <motion.div
+          animate={{ rotate: isOpen ? 90 : 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          {isOpen ? (
+            <svg className="h-6 w-6 cur cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          ) : (
+            <svg className="h-6 w-6 cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          )}
+        </motion.div>
+      </motion.button>
     </div>
   );
 }

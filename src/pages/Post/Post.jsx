@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import api from '../../services/api'
+import { motion } from 'framer-motion'
 
 // Clase PostUser - Equivalente a PostUser.java
 class PostUser {
@@ -419,13 +420,15 @@ export function Post() {
                       </span>
                     </div>
                     
-                    <button
+                    <motion.button
                       type="submit"
                       disabled={loading || !text.trim()}
                       className="bg-blue-600 text-white px-4 sm:px-6 py-1.5 sm:py-2 text-sm sm:text-base rounded-full font-semibold hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
+                      whileTap={{ scale: 0.95 }}
+                      transition={{ duration: 0.1 }}
                     >
                       {loading ? 'Publicando...' : 'Publicar'}
-                    </button>
+                    </motion.button>
                   </div>
                 </div>
               </div>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 
 export function ToggleDarkMode() {
     const [darkMode, setDarkMode] = useState(() => {
@@ -48,10 +49,12 @@ export function ToggleDarkMode() {
     };
 
     return (
-        <button
+        <motion.button
             onClick={toggleDarkMode}
             className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
             aria-label={darkMode ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+            whileTap={{ scale: 0.95 }}
+            transition={{ duration: 0.1 }}
         >
             {darkMode ? (
                 <img 
@@ -66,6 +69,6 @@ export function ToggleDarkMode() {
                     alt="Modo Oscuro"
                 />
             )}
-        </button>
+        </motion.button>
     );
 }

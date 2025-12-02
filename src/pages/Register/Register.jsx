@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 import { authService } from '../../services/authService';
 import { useAuth } from '../../context/AuthContext';
+import { motion } from 'framer-motion';
 
 export function Register() {
   const navigate = useNavigate();
@@ -154,13 +155,15 @@ export function Register() {
               className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-700"
               required
             />
-            <button
+            <motion.button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
+              whileTap={{ scale: 0.95 }}
+              transition={{ duration: 0.1 }}
               className="absolute right-3 top-11 text-gray-500"
             >
               {showPassword ? <FaEyeSlash /> : <FaEye />}
-            </button>
+            </motion.button>
           </div>
 
           <div className="relative">
@@ -174,14 +177,26 @@ export function Register() {
               className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-700"
               required
             />
-            <button
+            <motion.button
               type="button"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              whileTap={{ scale: 0.95 }}
+              transition={{ duration: 0.1 }}
               className="absolute right-3 top-11 text-gray-500"
             >
               {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
-            </button>
+            </motion.button>
           </div>
+
+          <motion.button
+            type="submit"
+            disabled={loading}
+            whileTap={{ scale: 0.95 }}
+            transition={{ duration: 0.1 }}
+            className="w-full py-2 bg-blue-500 text-white rounded-3xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? 'Registrando...' : 'Siguiente'}
+          </motion.button>
 
           <div className="relative my-3">
             <div className="absolute inset-0 flex items-center">
@@ -205,23 +220,17 @@ export function Register() {
             />
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-2 bg-blue-500 text-white rounded-3xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? 'Registrando...' : 'Siguiente'}
-          </button>
-
           <div className="text-center mt-4">
             <span className="text-gray-600 dark:text-gray-400">¿Ya tienes una cuenta? </span>
-            <button
+            <motion.button
               type="button"
+              whileTap={{ scale: 0.95 }}
+              transition={{ duration: 0.1 }}
               className="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
               onClick={() => navigate('/InicioSesion')}
             >
               Inicia Sesión
-            </button>
+            </motion.button>
           </div>
         </form>
       </div>

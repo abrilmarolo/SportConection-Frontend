@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { locationService } from '../../../services/locationService';
 import { sportService } from '../../../services/sportService';
 import { authService } from '../../../services/authService';
@@ -227,8 +228,16 @@ export function RegisterPartTwo() {
             </label>
           </div>
 
-          {formData.profile_type && (
-            <div className="mt-4">
+          <AnimatePresence mode="wait">
+            {formData.profile_type && (
+              <motion.div
+                key={formData.profile_type}
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+                className="mt-4"
+              >
               {/* Campos específicos según el tipo de usuario */}
               {formData.profile_type === 'Deportista' && (
                 <div className="space-y-4">
@@ -525,23 +534,28 @@ export function RegisterPartTwo() {
                   />
                 </div>
               )}
-            </div>
-          )}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <div className="flex gap-4 mt-6">
-            <button
+            <motion.button
               onClick={handleBack}
+              whileTap={{ scale: 0.95 }}
+              transition={{ duration: 0.1 }}
               className="w-1/2 py-2 bg-gray-200 text-gray-700 rounded-3xl hover:bg-gray-300"
             >
               Atrás
-            </button>
-            <button
+            </motion.button>
+            <motion.button
               onClick={handleSubmit}
               disabled={loading}
+              whileTap={{ scale: 0.95 }}
+              transition={{ duration: 0.1 }}
               className="w-1/2 py-2 bg-blue-500 text-white rounded-3xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Registrando...' : 'Registrarse'}
-            </button>
+            </motion.button>
           </div>
         </div>
       </div>

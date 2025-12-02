@@ -1,5 +1,6 @@
 import { useAuth } from '../../../context/AuthContext';
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 
 export function PublicHome() {
   const { user, isAuthenticated} = useAuth() || {};
@@ -39,7 +40,7 @@ export function PublicHome() {
 
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 my-5">
+    <div className="min-h-screen  text-gray-900 dark:text-gray-100 my-5">
       {/* Hero Section */}
       <section className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="container mx-auto px-4 py-12">
@@ -218,18 +219,22 @@ export function PublicHome() {
           
           {!isAuthenticated ? (
             <div className="flex justify-center space-x-3">
-              <a 
-                href="/Registro" 
+              <motion.a
+                href="/Registro"
+                whileTap={{ scale: 0.95 }}
+                transition={{ duration: 0.1 }}
                 className="px-6 py-2 bg-white text-gray-800 rounded-md hover:bg-gray-100 transition-colors text-sm font-medium"
               >
                 Registrarse
-              </a>
-              <a 
-                href="/InicioSesion" 
+              </motion.a>
+              <motion.a
+                href="/InicioSesion"
+                whileTap={{ scale: 0.95 }}
+                transition={{ duration: 0.1 }}
                 className="px-6 py-2 border border-gray-400 text-white rounded-md hover:bg-gray-700 transition-colors text-sm font-medium"
               >
                 Acceder
-              </a>
+              </motion.a>
             </div>
           ) : (
             <div className="flex justify-center space-x-3">

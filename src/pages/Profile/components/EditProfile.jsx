@@ -4,6 +4,7 @@ import { authService } from '../../../services/authService';
 import { locationService } from '../../../services/locationService';
 import { sportService } from '../../../services/sportService';
 import { profilePhotoService } from '../../../services/profilePhotoService';
+import { motion } from 'framer-motion';
 
 export function EditProfile() {
   const navigate = useNavigate();
@@ -256,24 +257,30 @@ export function EditProfile() {
           <div>
             <label className="block text-gray-700 dark:text-gray-200 mb-2">Foto de perfil</label>
             <div className="flex gap-2 items-center">
-              <button type="button" onClick={() => fileInputRef.current?.click()}
-                className="px-4 py-2 bg-blue-700 hover:bg-blue-500 text-white rounded-lg cursor-pointer">
+              <motion.button type="button" onClick={() => fileInputRef.current?.click()}
+                className="px-4 py-2 bg-blue-700 hover:bg-blue-500 text-white rounded-lg cursor-pointer"
+                whileTap={{ scale: 0.95 }}
+                transition={{ duration: 0.1 }}>
                 Subir foto
-              </button>
+              </motion.button>
               <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFile} className="hidden" />
               <span className="text-sm text-gray-600 dark:text-gray-400">{profile?.photo_url ? 'Foto disponible' : 'Sin foto'}</span>
             </div>
           </div>
 
           <div className="flex gap-3 justify-end pt-4">
-            <button type="button" onClick={() => navigate(-1)} 
-              className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:bg-gray-600 cursor-pointer">
+            <motion.button type="button" onClick={() => navigate(-1)} 
+              className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:bg-gray-600 cursor-pointer"
+              whileTap={{ scale: 0.95 }}
+              transition={{ duration: 0.1 }}>
               Cancelar
-            </button>
-            <button type="submit" disabled={saving} 
-              className={`px-4 py-2 rounded-lg text-white ${saving ? 'bg-green-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-500 cursor-pointer'}`}>
+            </motion.button>
+            <motion.button type="submit" disabled={saving} 
+              className={`px-4 py-2 rounded-lg text-white ${saving ? 'bg-green-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-500 cursor-pointer'}`}
+              whileTap={{ scale: 0.95 }}
+              transition={{ duration: 0.1 }}>
               {saving ? 'Guardando...' : 'Guardar cambios'}
-            </button>
+            </motion.button>
           </div>
         </form>
       </div>

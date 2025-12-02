@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const questions = [
   {
@@ -55,20 +56,32 @@ export function FrequentQuestions() {
                 onClick={() => handleToggle(idx)}
               >
                 <span className="text-lg font-medium text-gray-800 dark:text-white">{q.question}</span>
-                <svg
-                  className={`w-5 h-5 text-gray-500 dark:text-gray-300 transform transition-transform ${openIndex === idx ? 'rotate-180' : ''}`}
+                <motion.svg
+                  className="w-5 h-5 text-gray-500 dark:text-gray-300"
+                  animate={{ rotate: openIndex === idx ? 180 : 0 }}
+                  transition={{ duration: 0.3 }}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
+                </motion.svg>
               </button>
-              {openIndex === idx && (
-                <div className="px-6 pb-4 text-gray-700 dark:text-gray-300">
-                  {q.answer}
-                </div>
-              )}
+              <AnimatePresence>
+                {openIndex === idx && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-6 pb-4 text-gray-700 dark:text-gray-300">
+                      {q.answer}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           ))}
         </div>

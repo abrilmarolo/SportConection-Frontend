@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { FaEye, FaEyeSlash, FaGoogle, FaExclamationTriangle } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import { GoogleLogin } from '@react-oauth/google';
+import { motion } from 'framer-motion';
 export function LogIn() {
   const navigate = useNavigate();
   const [credentials, setCredentials] = useState({
@@ -116,23 +117,27 @@ export function LogIn() {
               className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               required
             />
-            <button
+            <motion.button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
+              whileTap={{ scale: 0.95 }}
+              transition={{ duration: 0.1 }}
               className="absolute right-3 top-11 text-gray-500"
               aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
             >
               {showPassword ? <FaEyeSlash /> : <FaEye />}
-            </button>
+            </motion.button>
           </div>
 
-          <button
+          <motion.button
             type="submit"
             disabled={isLoading}
+            whileTap={{ scale: 0.95 }}
+            transition={{ duration: 0.1 }}
             className={`w-full py-2 rounded-3xl text-white ${isLoading ? 'bg-blue-400 cursor-pointer' : 'bg-blue-700 hover:bg-blue-500 cursor-pointer'}`}
           >
             {isLoading ? 'Iniciando Sesión...' : 'Iniciar Sesión'}
-          </button>
+          </motion.button>
 
           <div className="relative my-3">
             <div className="absolute inset-0 flex items-center">
@@ -161,13 +166,15 @@ export function LogIn() {
             <span className="text-gray-600 dark:text-gray-400">
               ¿No tienes una cuenta?{' '}
             </span>
-            <button
+            <motion.button
               type="button"
               onClick={() => navigate('/Registro')}
+              whileTap={{ scale: 0.95 }}
+              transition={{ duration: 0.1 }}
               className="text-blue-500 hover:text-blue-700 dark:text-blue-400"
             >
               Regístrate
-            </button>
+            </motion.button>
           </div>
         </form>
       </div>

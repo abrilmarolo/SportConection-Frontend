@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { motion } from 'framer-motion';
 
 export function Footer() {
   const { isAuthenticated, user } = useAuth();
@@ -22,13 +23,19 @@ export function Footer() {
               {!isAuthenticated && (
                 <>
                   <li>
-                    <Link to="/AcercaDeNosotros" className="hover:text-blue-500 dark:hover:text-blue-400">Acerca de</Link>
+                    <motion.div whileTap={{ scale: 0.95 }} transition={{ duration: 0.1 }}>
+                      <Link to="/AcercaDeNosotros" className="hover:text-blue-500 dark:hover:text-blue-400">Acerca de</Link>
+                    </motion.div>
                   </li>
                   <li>
-                    <Link to="/Contacto" className="hover:text-blue-500 dark:hover:text-blue-400">Contacto</Link>
+                    <motion.div whileTap={{ scale: 0.95 }} transition={{ duration: 0.1 }}>
+                      <Link to="/Contacto" className="hover:text-blue-500 dark:hover:text-blue-400">Contacto</Link>
+                    </motion.div>
                   </li>
                   <li>
-                    <Link to="/PreguntasFrecuentes" className="hover:text-blue-500 dark:hover:text-blue-400">Preguntas Frecuentes</Link>
+                    <motion.div whileTap={{ scale: 0.95 }} transition={{ duration: 0.1 }}>
+                      <Link to="/PreguntasFrecuentes" className="hover:text-blue-500 dark:hover:text-blue-400">Preguntas Frecuentes</Link>
+                    </motion.div>
                   </li>
                 </>
               )}
@@ -37,19 +44,29 @@ export function Footer() {
               {isAuthenticated && !isAdmin && (
                 <>
                   <li>
-                    <Link to="/Publicaciones" className="hover:text-blue-500 dark:hover:text-blue-400">Publicaciones</Link>
+                    <motion.div whileTap={{ scale: 0.95 }} transition={{ duration: 0.1 }}>
+                      <Link to="/Publicaciones" className="hover:text-blue-500 dark:hover:text-blue-400">Publicaciones</Link>
+                    </motion.div>
                   </li>
                   <li>
-                    <Link to="/Match" className="hover:text-blue-500 dark:hover:text-blue-400">Match</Link>
+                    <motion.div whileTap={{ scale: 0.95 }} transition={{ duration: 0.1 }}>
+                      <Link to="/Match" className="hover:text-blue-500 dark:hover:text-blue-400">Match</Link>
+                    </motion.div>
                   </li>
                   <li>
-                    <Link to="/Chat" className="hover:text-blue-500 dark:hover:text-blue-400">Chat</Link>
+                    <motion.div whileTap={{ scale: 0.95 }} transition={{ duration: 0.1 }}>
+                      <Link to="/Chat" className="hover:text-blue-500 dark:hover:text-blue-400">Chat</Link>
+                    </motion.div>
                   </li>
                   <li>
-                    <Link to="/Mapa" className="hover:text-blue-500 dark:hover:text-blue-400">Mapa</Link>
+                    <motion.div whileTap={{ scale: 0.95 }} transition={{ duration: 0.1 }}>
+                      <Link to="/Mapa" className="hover:text-blue-500 dark:hover:text-blue-400">Mapa</Link>
+                    </motion.div>
                   </li>
                   <li>
-                    <Link to="/Perfil" className="hover:text-blue-500 dark:hover:text-blue-400">Mi Perfil</Link>
+                    <motion.div whileTap={{ scale: 0.95 }} transition={{ duration: 0.1 }}>
+                      <Link to="/Perfil" className="hover:text-blue-500 dark:hover:text-blue-400">Mi Perfil</Link>
+                    </motion.div>
                   </li>
                 </>
               )}
@@ -58,13 +75,19 @@ export function Footer() {
               {isAdmin && (
                 <>
                   <li>
-                    <Link to="/Admin/Usuarios" className="hover:text-blue-500 dark:hover:text-blue-400">Usuarios</Link>
+                    <motion.div whileTap={{ scale: 0.95 }} transition={{ duration: 0.1 }}>
+                      <Link to="/Admin/Usuarios" className="hover:text-blue-500 dark:hover:text-blue-400">Usuarios</Link>
+                    </motion.div>
                   </li>
                   <li>
-                    <Link to="/Admin/Deportes" className="hover:text-blue-500 dark:hover:text-blue-400">Deportes</Link>
+                    <motion.div whileTap={{ scale: 0.95 }} transition={{ duration: 0.1 }}>
+                      <Link to="/Admin/Deportes" className="hover:text-blue-500 dark:hover:text-blue-400">Deportes</Link>
+                    </motion.div>
                   </li>
                   <li>
-                    <Link to="/Admin/Ubicaciones" className="hover:text-blue-500 dark:hover:text-blue-400">Ubicaciones</Link>
+                    <motion.div whileTap={{ scale: 0.95 }} transition={{ duration: 0.1 }}>
+                      <Link to="/Admin/Ubicaciones" className="hover:text-blue-500 dark:hover:text-blue-400">Ubicaciones</Link>
+                    </motion.div>
                   </li>
                 </>
               )}
@@ -74,14 +97,26 @@ export function Footer() {
           <div>
             <h4 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">Síguenos</h4>
             <div className="flex space-x-4 justify-center">
-              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" 
-                className="hover:text-blue-500 dark:hover:text-blue-400">
+              <motion.a
+                href="https://twitter.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                whileTap={{ scale: 0.95 }}
+                transition={{ duration: 0.1 }}
+                className="hover:text-blue-500 dark:hover:text-blue-400"
+              >
                 Twitter
-              </a>
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" 
-                className="hover:text-blue-500 dark:hover:text-blue-400">
+              </motion.a>
+              <motion.a
+                href="https://instagram.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                whileTap={{ scale: 0.95 }}
+                transition={{ duration: 0.1 }}
+                className="hover:text-blue-500 dark:hover:text-blue-400"
+              >
                 Instagram
-              </a>
+              </motion.a>
             </div>
           </div>
         </div>

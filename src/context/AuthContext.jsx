@@ -89,8 +89,49 @@ export function AuthProvider({ children }) {
         response = await authService.login(credentials);
       }
 
-      // Si requiere completar perfil, NO autenticar todavía
-      if (response.requiresProfile) {
+      console.log('Login response:', response);
+      console.log('User data:', response.user);
+
+      // Si no viene profile_type en la respuesta inicial, obtener el perfil completo
+      if (!response.user?.profile_type && response.token) {
+        try {
+          // Guardar el token temporalmente para poder hacer la petición
+          localStorage.setItem('token', response.token);
+          
+          // Obtener el perfil completo
+          const profileData = await authService.getMyProfile();
+          console.log('Profile data fetched:', profileData);
+          
+          // Actualizar la respuesta con los datos del perfil
+          response.user = {
+            ...response.user,
+            profile_type: profileData.profileType,
+            ...profileData.profile
+          };
+        } catch (error) {
+          console.error('Error fetching profile:', error);
+          // Si falla, limpiar el token
+          localStorage.removeItem('token');
+        }
+      }
+
+      console.log('Profile type:', response.user?.profile_type);
+      console.log('RequiresProfile flag:', response.requiresProfile);
+      console.log('User role:', response.user?.role);
+
+      // Verificar si el usuario tiene perfil completo
+      // NO redirigir si es admin, solo redirigir usuarios normales sin perfil
+      const isAdmin = response.user?.role === 'admin';
+      const needsProfile = !isAdmin && (
+        response.requiresProfile === true || 
+        response.user?.profile_type === null ||
+        response.user?.profile_type === undefined
+      );
+
+      console.log('Is admin?', isAdmin);
+      console.log('Needs profile?', needsProfile);
+
+      if (needsProfile) {
         // Guardar temporalmente en sessionStorage
         sessionStorage.setItem('registrationData', JSON.stringify({
           email: response.user?.email,

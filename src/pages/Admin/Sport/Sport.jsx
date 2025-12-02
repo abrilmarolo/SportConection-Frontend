@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAdmin } from '../../../context/AdminContext';
+import { motion } from 'framer-motion';
 
 export function Sport() {
   const navigate = useNavigate();
@@ -99,12 +100,14 @@ export function Sport() {
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
               Gestión de Deportes
             </h2>
-            <button
-              className="mt-3 sm:mt-0 w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            <motion.button
+              className="mt-3 sm:mt-0 w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
               onClick={() => navigate('/CrearDeporte')}
+              whileTap={{ scale: 0.95 }}
+              transition={{ duration: 0.1 }}
             >
               Crear nuevo deporte
-            </button>
+            </motion.button>
           </div>
 
           <div className="mb-4 relative">
@@ -165,33 +168,41 @@ export function Sport() {
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         {editId === sport.id ? (
                           <div className="flex space-x-2">
-                            <button
+                            <motion.button
                               onClick={handleEdit}
                               className="text-blue-600 hover:text-blue-900 dark:hover:text-blue-400"
+                              whileTap={{ scale: 0.95 }}
+                              transition={{ duration: 0.1 }}
                             >
                               Guardar
-                            </button>
-                            <button
+                            </motion.button>
+                            <motion.button
                               onClick={cancelEdit}
                               className="text-gray-600 hover:text-gray-900 dark:hover:text-gray-400"
+                              whileTap={{ scale: 0.95 }}
+                              transition={{ duration: 0.1 }}
                             >
                               Cancelar
-                            </button>
+                            </motion.button>
                           </div>
                         ) : (
                           <div className="flex space-x-2">
-                            <button
+                            <motion.button
                               onClick={() => startEdit(sport)}
                               className="text-blue-600 hover:text-blue-900 dark:hover:text-blue-400"
+                              whileTap={{ scale: 0.95 }}
+                              transition={{ duration: 0.1 }}
                             >
                               Editar
-                            </button>
-                            <button
+                            </motion.button>
+                            <motion.button
                               onClick={() => handleDelete(sport.id)}
                               className="text-red-600 hover:text-red-900 dark:hover:text-red-400"
+                              whileTap={{ scale: 0.95 }}
+                              transition={{ duration: 0.1 }}
                             >
                               Eliminar
-                            </button>
+                            </motion.button>
                           </div>
                         )}
                       </td>
@@ -207,23 +218,27 @@ export function Sport() {
                     Mostrando {startIndex + 1} a {Math.min(endIndex, filteredSports.length)} de {filteredSports.length} deportes
                   </div>
                   <div className="flex space-x-2">
-                    <button
+                    <motion.button
                       onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                       disabled={currentPage === 1}
                       className="px-3 py-1 border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700 dark:text-white"
+                      whileTap={{ scale: 0.95 }}
+                      transition={{ duration: 0.1 }}
                     >
                       Anterior
-                    </button>
+                    </motion.button>
                     <span className="px-3 py-1 text-gray-700 dark:text-gray-300">
                       Página {currentPage} de {totalPages}
                     </span>
-                    <button
+                    <motion.button
                       onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                       disabled={currentPage === totalPages}
                       className="px-3 py-1 border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700 dark:text-white"
+                      whileTap={{ scale: 0.95 }}
+                      transition={{ duration: 0.1 }}
                     >
                       Siguiente
-                    </button>
+                    </motion.button>
                   </div>
                 </div>
               )}

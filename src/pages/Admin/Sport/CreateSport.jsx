@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAdmin } from '../../../context/AdminContext';
+import { motion } from 'framer-motion';
 
 export function CreateSport() {
   const navigate = useNavigate();
@@ -71,20 +72,24 @@ export function CreateSport() {
             </div>
 
             <div className="flex justify-end space-x-4">
-              <button
+              <motion.button
                 type="button"
                 onClick={() => navigate('/Deportes')}
-                className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
+                className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
+                whileTap={{ scale: 0.95 }}
+                transition={{ duration: 0.1 }}
               >
                 Cancelar
-              </button>
-              <button
+              </motion.button>
+              <motion.button
                 type="submit"
                 disabled={loading}
-                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                whileTap={{ scale: 0.95 }}
+                transition={{ duration: 0.1 }}
               >
                 {loading ? 'Creando...' : 'Crear Deporte'}
-              </button>
+              </motion.button>
             </div>
           </form>
         </div>

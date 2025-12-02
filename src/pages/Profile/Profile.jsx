@@ -4,6 +4,7 @@ import { useAdmin } from '../../context/AdminContext';
 import { profilePhotoService } from '../../services/profilePhotoService';
 import { FaEnvelope, FaPhone, FaInstagram, FaTwitter } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 
 export function Profile() {
   const { isAuthenticated, user, getMyProfile, loading, authError, deleteProfile } = useAuth();
@@ -232,22 +233,26 @@ export function Profile() {
 
             {/* Botones de acción para foto */}
             <div className="flex gap-3">
-              <button
+              <motion.button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={photoUploading}
                 className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                whileTap={{ scale: 0.95 }}
+                transition={{ duration: 0.1 }}
               >
                 {photoUploading ? 'Subiendo...' : (profileData?.profile?.photo_url ? 'Cambiar foto' : 'Subir foto')}
-              </button>
+              </motion.button>
               
               {profileData?.profile?.photo_url && (
-                <button
+                <motion.button
                   onClick={handlePhotoDelete}
                   disabled={photoDeleting || photoUploading}
                   className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-full text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ duration: 0.1 }}
                 >
                   {photoDeleting ? 'Eliminando...' : 'Eliminar'}
-                </button>
+                </motion.button>
               )}
             </div>
 
@@ -330,26 +335,30 @@ export function Profile() {
             {profileData && (profileData?.profile?.ig_user || profileData?.profile?.x_user) && (
               <div className="flex justify-center gap-6 pt-4">
                 {profileData?.profile?.ig_user && (
-                  <a 
+                  <motion.a 
                     href={`https://instagram.com/${profileData?.profile?.ig_user}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 text-pink-600 hover:text-pink-700 transition-colors"
+                    whileTap={{ scale: 0.95 }}
+                    transition={{ duration: 0.1 }}
                   >
                     <FaInstagram />
                     <span>@{profileData?.profile?.ig_user}</span>
-                  </a>
+                  </motion.a>
                 )}
                 {profileData?.profile?.x_user && (
-                  <a 
+                  <motion.a 
                     href={`https://twitter.com/${profileData?.profile?.x_user}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors"
+                    whileTap={{ scale: 0.95 }}
+                    transition={{ duration: 0.1 }}
                   >
                     <FaTwitter />
                     <span>@{profileData?.profile?.x_user}</span>
-                  </a>
+                  </motion.a>
                 )}
               </div>
             )}
@@ -427,19 +436,23 @@ export function Profile() {
 
           {/* Botones de acción del Usuario */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
-            <button
+            <motion.button
               onClick={() => navigate('/EditarPerfil')}
               className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-medium transition-colors"
+              whileTap={{ scale: 0.95 }}
+              transition={{ duration: 0.1 }}
             >
               Editar Perfil
-            </button>
-            <button 
+            </motion.button>
+            <motion.button 
               onClick={handleDeleteProfile}
               disabled={profileDeleting || photoUploading || photoDeleting}
               className="px-8 py-3 bg-red-600 hover:bg-red-700 text-white rounded-full font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              whileTap={{ scale: 0.95 }}
+              transition={{ duration: 0.1 }}
             >
               {profileDeleting ? 'Eliminando cuenta...' : 'Borrar Cuenta'}
-            </button>
+            </motion.button>
           </div>
         </div>
       </div>

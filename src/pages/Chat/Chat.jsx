@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { chatService } from '../../services/chatService';
 import { FaPhone, FaWhatsapp, FaInstagram, FaTwitter, FaTimes} from 'react-icons/fa';
 import Modal from '../../components/Modal/Modal';
+import { motion } from 'framer-motion';
 
 export function Chat() {
     const { isAuthenticated } = useAuth();
@@ -159,13 +160,15 @@ export function Chat() {
                     <div className="w-[80%] mx-auto">
                         <div className="flex items-center justify-between mb-6">
                             <h1 className="text-2xl font-semibold">Mis Matches</h1>
-                            <button 
+                            <motion.button 
                                 onClick={fetchMatches}
                                 className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-colors"
                                 disabled={loading}
+                                whileTap={{ scale: 0.95 }}
+                                transition={{ duration: 0.1 }}
                             >
                                 {loading ? 'Actualizando...' : 'Actualizar'}
-                            </button>
+                            </motion.button>
                         </div>
 
                         {/* Loading state */}
@@ -252,7 +255,7 @@ export function Chat() {
                                                     <div className="text-sm">
                                                         <span className="font-medium text-gray-600 dark:text-gray-300">Teléfono:</span>
                                                         <div className="mt-1">
-                                                            <button
+                                                            <motion.button
                                                                 onClick={() => openWhatsApp(
                                                                     match.other_user.profile.phone_number, 
                                                                     match.other_user.profile?.name && match.other_user.profile?.last_name 
@@ -260,23 +263,27 @@ export function Chat() {
                                                                         : match.other_user.profile?.name || 'Usuario'
                                                                 )}
                                                                 className="inline-flex items-center gap-2 text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 font-mono text-sm underline transition-colors"
+                                                                whileTap={{ scale: 0.95 }}
+                                                                transition={{ duration: 0.1 }}
                                                             >
                                                                 <FaPhone className="text-green-500" />
                                                                 {formatPhoneNumber(match.other_user.profile.phone_number)}
-                                                            </button>
+                                                            </motion.button>
                                                         </div>
                                                     </div>
                                                     
                                                     {/* Botón para ver perfil completo */}
-                                                    <button
+                                                    <motion.button
                                                         onClick={() => openProfileModal(match)}
                                                         className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors font-medium mb-2"
+                                                        whileTap={{ scale: 0.95 }}
+                                                        transition={{ duration: 0.1 }}
                                                     >
-                                                        👤 Ver Perfil Completo
-                                                    </button>
+                                                        Ver Perfil Completo
+                                                    </motion.button>
 
                                                     {/* Botón de WhatsApp */}
-                                                    <button
+                                                    <motion.button
                                                         onClick={() => openWhatsApp(
                                                             match.other_user.profile.phone_number, 
                                                             match.other_user.profile?.name && match.other_user.profile?.last_name 
@@ -284,10 +291,12 @@ export function Chat() {
                                                                 : match.other_user.profile?.name || 'Usuario'
                                                         )}
                                                         className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors font-medium"
+                                                        whileTap={{ scale: 0.95 }}
+                                                        transition={{ duration: 0.1 }}
                                                     >
                                                         <FaWhatsapp />
                                                         Chatear en WhatsApp
-                                                    </button>
+                                                    </motion.button>
                                                 </div>
                                             ) : (
                                                 <div className="text-sm text-gray-500 dark:text-gray-400 italic">
@@ -310,12 +319,14 @@ export function Chat() {
                         {/* Header del modal */}
                         <div className="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-700">
                             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Perfil Completo</h2>
-                            <button
+                            <motion.button
                                 onClick={closeProfileModal}
                                 className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+                                whileTap={{ scale: 0.95 }}
+                                transition={{ duration: 0.1 }}
                             >
                                 <FaTimes size={24} />
-                            </button>
+                            </motion.button>
                         </div>
 
                         {/* Contenido del modal */}
@@ -378,26 +389,30 @@ export function Chat() {
                                 {(profileData.profile?.ig_user || profileData.profile?.x_user) && (
                                     <div className="flex justify-center gap-6 pt-2">
                                         {profileData.profile?.ig_user && (
-                                            <a
+                                            <motion.a
                                                 href={`https://instagram.com/${profileData.profile.ig_user}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="flex items-center gap-2 text-pink-600 hover:text-pink-700 transition-colors"
+                                                whileTap={{ scale: 0.95 }}
+                                                transition={{ duration: 0.1 }}
                                             >
                                                 <FaInstagram size={20} />
                                                 <span>@{profileData.profile.ig_user}</span>
-                                            </a>
+                                            </motion.a>
                                         )}
                                         {profileData.profile?.x_user && (
-                                            <a
+                                            <motion.a
                                                 href={`https://twitter.com/${profileData.profile.x_user}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors"
+                                                whileTap={{ scale: 0.95 }}
+                                                transition={{ duration: 0.1 }}
                                             >
                                                 <FaTwitter size={20} />
                                                 <span>@{profileData.profile.x_user}</span>
-                                            </a>
+                                            </motion.a>
                                         )}
                                     </div>
                                 )}

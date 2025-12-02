@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import emailjs from '@emailjs/browser';
+import { motion } from 'framer-motion';
 
 export function Contact() {
   const [form, setForm] = useState({
@@ -66,12 +67,14 @@ export function Contact() {
             <span className="text-2xl">✅</span>
             <h2 className="text-xl font-medium text-gray-800 dark:text-white mt-4 mb-2">¡Gracias por tu consulta!</h2>
             <p className="text-gray-600 dark:text-gray-300">Nos pondremos en contacto contigo a la brevedad.</p>
-            <button
+            <motion.button
               onClick={() => setEnviado(false)}
+              whileTap={{ scale: 0.95 }}
+              transition={{ duration: 0.1 }}
               className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               Enviar otro mensaje
-            </button>
+            </motion.button>
           </div>
         ) : (
           <>
@@ -138,9 +141,11 @@ export function Contact() {
                 className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               />
             </div>
-            <button
+            <motion.button
               type="submit"
               disabled={enviando}
+              whileTap={{ scale: 0.95 }}
+              transition={{ duration: 0.1 }}
               className="w-full py-2 rounded-3xl text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
             >
               {enviando ? (
@@ -151,7 +156,7 @@ export function Contact() {
               ) : (
                 'Enviar Consulta'
               )}
-            </button>
+            </motion.button>
           </form>
           </>
         )}

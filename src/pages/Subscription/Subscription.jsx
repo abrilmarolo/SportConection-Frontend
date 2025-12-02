@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { subscriptionService } from '../../services/subscriptionService';
 import { useAuth } from '../../context/AuthContext';
 import { FaBolt, FaTimes, FaCheck } from 'react-icons/fa';
+import Modal from '../../components/Modal/Modal';
+import { motion } from 'framer-motion';
 
 export function Subscription() {
     const { isAuthenticated, loading: authLoading } = useAuth();
@@ -249,19 +251,23 @@ export function Subscription() {
 
                         {/* Botones de acción */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <button
+                            <motion.button
                                 onClick={openPlansModal}
                                 className="py-4 px-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg font-semibold transition-all shadow-lg"
+                                whileTap={{ scale: 0.95 }}
+                                transition={{ duration: 0.1 }}
                             >
                                 Renovar Suscripción
-                            </button>
-                            <button
+                            </motion.button>
+                            <motion.button
                                 onClick={handleCancelSubscription}
                                 disabled={cancelling}
                                 className="py-4 px-6 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white rounded-lg font-semibold transition-all shadow-lg disabled:cursor-not-allowed"
+                                whileTap={{ scale: 0.95 }}
+                                transition={{ duration: 0.1 }}
                             >
                                 {cancelling ? 'Cancelando...' : 'Cancelar Suscripción'}
-                            </button>
+                            </motion.button>
                         </div>
                     </div>
                 ) : (
@@ -276,12 +282,14 @@ export function Subscription() {
                                         <p className="font-semibold">Error:</p>
                                         <p className="text-sm mt-1">{error}</p>
                                     </div>
-                                    <button 
+                                    <motion.button 
                                         onClick={() => setError(null)}
                                         className="text-red-500 hover:text-red-700"
+                                        whileTap={{ scale: 0.95 }}
+                                        transition={{ duration: 0.1 }}
                                     >
                                         <FaTimes />
-                                    </button>
+                                    </motion.button>
                                 </div>
                             </div>
                         )}
@@ -312,10 +320,12 @@ export function Subscription() {
                                                 </span>
                                             </div>
 
-                                            <button
+                                            <motion.button
                                                 onClick={() => handleAcquirePlan(plan.id)}
                                                 disabled={processingCheckout !== null || !isAuthenticated}
                                                 className="w-full py-3 px-6 rounded-lg font-semibold transition-colors bg-blue-600 hover:bg-blue-700 text-white cursor-pointer disabled:bg-gray-300 disabled:dark:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed"
+                                                whileTap={{ scale: 0.95 }}
+                                                transition={{ duration: 0.1 }}
                                             >
                                                 {processingCheckout === plan.id ? (
                                                     <span className="flex items-center justify-center gap-2">
@@ -327,7 +337,7 @@ export function Subscription() {
                                                 ) : (
                                                     'Adquirir Plan'
                                                 )}
-                                            </button>
+                                            </motion.button>
                                         </div>
                                     </div>
                                 ))}
@@ -337,134 +347,133 @@ export function Subscription() {
                 )}
 
                 {/* Modal de planes (para renovación) */}
-                {showPlansModal && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-4xl w-full p-8 relative max-h-[90vh] overflow-y-auto">
-                            <button
-                                onClick={closePlansModal}
-                                className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                            >
-                                <FaTimes className="text-2xl" />
-                            </button>
+                <Modal isOpen={showPlansModal} onClose={closePlansModal}>
+                        <motion.button
+                            onClick={closePlansModal}
+                            className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 z-10"
+                            whileTap={{ scale: 0.95 }}
+                            transition={{ duration: 0.1 }}
+                        >
+                            <FaTimes className="text-2xl" />
+                        </motion.button>
 
-                            <div className="text-center mb-8">
-                                <FaBolt className="text-5xl text-yellow-500 mx-auto mb-4" />
-                                <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                                    Renueva tu Suscripción
-                                </h2>
-                                <p className="text-gray-600 dark:text-gray-400">
-                                    Elige el plan que mejor se adapte a tus necesidades
+                        <div className="text-center mb-8">
+                            <FaBolt className="text-5xl text-yellow-500 mx-auto mb-4" />
+                            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                                Renueva tu Suscripción
+                            </h2>
+                            <p className="text-gray-600 dark:text-gray-400">
+                                Elige el plan que mejor se adapte a tus necesidades
+                            </p>
+                        </div>
+
+                        {loading ? (
+                            <div className="flex items-center justify-center py-20">
+                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {plans.map((plan) => (
+                                    <div
+                                        key={plan.id}
+                                        className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 hover:shadow-lg transition-shadow"
+                                    >
+                                        <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                                            {plan.name}
+                                        </h3>
+                                        <div className="mb-6">
+                                            <span className="text-4xl font-bold text-blue-600 dark:text-blue-400">
+                                                ${plan.price}
+                                            </span>
+                                            <span className="text-gray-600 dark:text-gray-400 ml-2">
+                                                / mes
+                                            </span>
+                                        </div>
+                                        <motion.button
+                                            onClick={() => {
+                                                closePlansModal();
+                                                handleAcquirePlan(plan.id);
+                                            }}
+                                            disabled={processingCheckout !== null}
+                                            className="w-full py-3 px-6 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg font-semibold transition-colors"
+                                            whileTap={{ scale: 0.95 }}
+                                            transition={{ duration: 0.1 }}
+                                        >
+                                            {processingCheckout === plan.id ? 'Procesando...' : 'Seleccionar Plan'}
+                                        </motion.button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                </Modal>
+
+                {/* Modal de estado de suscripción */}
+                <Modal isOpen={showModal && !!subscriptionStatus} onClose={closeModal}>
+                        <motion.button
+                            onClick={closeModal}
+                            className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 z-10"
+                            whileTap={{ scale: 0.95 }}
+                            transition={{ duration: 0.1 }}
+                        >
+                            <FaTimes className="text-2xl" />
+                        </motion.button>
+
+                        <div className="text-center mb-6">
+                            <FaBolt className="text-5xl text-yellow-500 mx-auto mb-4" />
+                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                                Tu Suscripción Premium
+                            </h2>
+                        </div>
+
+                        <div className="space-y-4 mb-6">
+                            <div className="p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                                    Plan Actual
+                                </p>
+                                <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                                    {subscriptionStatus?.subscription_details?.plan_name || 'Premium'}
                                 </p>
                             </div>
 
-                            {loading ? (
-                                <div className="flex items-center justify-center py-20">
-                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                                </div>
-                            ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {plans.map((plan) => (
-                                        <div
-                                            key={plan.id}
-                                            className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 hover:shadow-lg transition-shadow"
-                                        >
-                                            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                                                {plan.name}
-                                            </h3>
-                                            <div className="mb-6">
-                                                <span className="text-4xl font-bold text-blue-600 dark:text-blue-400">
-                                                    ${plan.price}
-                                                </span>
-                                                <span className="text-gray-600 dark:text-gray-400 ml-2">
-                                                    / mes
-                                                </span>
-                                            </div>
-                                            <button
-                                                onClick={() => {
-                                                    closePlansModal();
-                                                    handleAcquirePlan(plan.id);
-                                                }}
-                                                disabled={processingCheckout !== null}
-                                                className="w-full py-3 px-6 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg font-semibold transition-colors"
-                                            >
-                                                {processingCheckout === plan.id ? 'Procesando...' : 'Seleccionar Plan'}
-                                            </button>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                )}
-
-                {/* Modal de estado de suscripción (ya no se usa, info integrada arriba) */}
-                {showModal && subscriptionStatus && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full p-8 relative">
-                            <button
-                                onClick={closeModal}
-                                className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                            >
-                                <FaTimes className="text-2xl" />
-                            </button>
-
-                            <div className="text-center mb-6">
-                                <FaBolt className="text-5xl text-yellow-500 mx-auto mb-4" />
-                                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                                    Tu Suscripción Premium
-                                </h2>
+                            <div className="p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                                    Fecha de Compra
+                                </p>
+                                <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                                    {formatDate(subscriptionStatus?.subscription_details?.start_date)}
+                                </p>
                             </div>
 
-                            <div className="space-y-4 mb-6">
-                                <div className="p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                                        Plan Actual
-                                    </p>
-                                    <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                                        {subscriptionStatus?.subscription_details?.plan_name || 'Premium'}
-                                    </p>
-                                </div>
-
-                                <div className="p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                                        Fecha de Compra
-                                    </p>
-                                    <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                                        {formatDate(subscriptionStatus?.subscription_details?.start_date)}
-                                    </p>
-                                </div>
-
-                                <div className="p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                                        Días Restantes
-                                    </p>
-                                    <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-                                        {calculateDaysRemaining()} días
-                                    </p>
-                                </div>
-
-                                <div className="p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                                        Vence el
-                                    </p>
-                                    <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                                        {formatDate(subscriptionStatus?.subscription_details?.end_date)}
-                                    </p>
-                                </div>
+                            <div className="p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                                    Días Restantes
+                                </p>
+                                <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                                    {calculateDaysRemaining()} días
+                                </p>
                             </div>
 
-                            <button
-                                onClick={() => {
-                                    closeModal();
-                                    // Aquí podrías redirigir a renovación o mostrar planes
-                                }}
-                                className="w-full py-3 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
-                            >
-                                Renovar Suscripción
-                            </button>
+                            <div className="p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                                    Vence el
+                                </p>
+                                <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                                    {formatDate(subscriptionStatus?.subscription_details?.end_date)}
+                                </p>
+                            </div>
                         </div>
-                    </div>
-                )}
+
+                        <motion.button
+                            onClick={() => {
+                                closeModal();
+                            }}
+                            className="w-full py-3 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
+                            whileTap={{ scale: 0.95 }}
+                            transition={{ duration: 0.1 }}
+                        >
+                            Renovar Suscripción
+                        </motion.button>
+                </Modal>
             </div>
         </div>
             )}
