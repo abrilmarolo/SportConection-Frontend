@@ -109,6 +109,17 @@ export const subscriptionService = {
     }
   },
 
+  // Verificar sesión de Stripe (para página de success)
+  verifySession: async (sessionId) => {
+    try {
+      const res = await api.get(`/subscriptions/verify-session?session_id=${sessionId}`);
+      return res.data;
+    } catch (err) {
+      console.error('Error al verificar sesión:', err);
+      throw err;
+    }
+  },
+
   // Cancelar suscripción
   cancelSubscription: async () => {
     try {
