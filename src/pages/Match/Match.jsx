@@ -1,11 +1,15 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState, useCallback } from 'react'
 import { useAuth } from '../../context/AuthContext';
+import { usePremium } from '../../context/PremiumContext';
 import { matchService } from '../../services/matchService';
-import { FaInstagram, FaTwitter, FaTimes, FaStar, FaBolt, FaCheck } from 'react-icons/fa';
-import { motion, AnimatePresence } from 'framer-motion';
+import { FaInstagram, FaTwitter, FaTimes, FaStar, FaBolt, FaCheck, FaPhone, FaLock } from 'react-icons/fa';
+import { AnimatePresence } from 'framer-motion';
+import { PaywallModal } from './components/PaywallModal';
+import { ContactModal } from './components/ContactModal';
 
 export function Match() {
     const { isAuthenticated } = useAuth();
+    const { isPremium, swipesRemaining, decrementSwipes, refreshPremiumStatus } = usePremium();
 
     // Estados para swipe-cards
     const [cards, setCards] = useState([]);
@@ -18,18 +22,18 @@ export function Match() {
     // Estados para filtros
     const [profileTypeFilter, setProfileTypeFilter] = useState('');
     const [userProfileType, setUserProfileType] = useState(null);
-    const [userSportId, setUserSportId] = useState(null);
     const [availableTypes, setAvailableTypes] = useState([]);
+    
+    // Estados para modales premium
+    const [showPaywallModal, setShowPaywallModal] = useState(false);
+    const [paywallFeature, setPaywallFeature] = useState('unlimited_swipes');
+    const [showContactModal, setShowContactModal] = useState(false);
+    const [contactInfo, setContactInfo] = useState(null);
     
     const topCardRef = useRef(null);
     const pointerData = useRef({ dragging: false, startX: 0, currentX: 0 });
 
-    useEffect(() => {
-        if (!isAuthenticated) return;
-        fetchDiscover();
-    }, [isAuthenticated, profileTypeFilter]);
-
-    async function fetchDiscover() {
+    const fetchDiscover = useCallback(async () => {
         try {
             setLoading(true);
             setError(null);
@@ -51,7 +55,6 @@ export function Match() {
             
             setCards(data.users || []);
             setUserProfileType(data.user_profile_type);
-            setUserSportId(data.user_sport_id);
             
             // Determinar tipos disponibles según el tipo de perfil del usuario
             // Según la API: Athletes ven teams y agents, Teams/Agents ven athletes
@@ -63,6 +66,15 @@ export function Match() {
             
         } catch (err) {
             console.error('💥 Error in fetchDiscover:', err);
+            
+            // Manejar error de filtros premium
+            if (err.response?.status === 403 && err.response?.data?.requires_subscription) {
+                setPaywallFeature('profile_filters');
+                setShowPaywallModal(true);
+                setProfileTypeFilter(''); // Resetear filtro
+                return;
+            }
+            
             let errorMessage = 'Error de conexión';
             
             if (err.response?.status === 404) {
@@ -79,7 +91,12 @@ export function Match() {
         } finally {
             setLoading(false);
         }
-    }
+    }, [profileTypeFilter]);
+
+    useEffect(() => {
+        if (!isAuthenticated) return;
+        fetchDiscover();
+    }, [isAuthenticated, fetchDiscover]);
 
     function getProfileUserId(profile) {
         if (!profile) return null;
@@ -107,6 +124,11 @@ export function Match() {
                 throw new Error(data.error || 'Error en el swipe');
             }
             
+            // Actualizar contador de swipes
+            if (!isPremium) {
+                decrementSwipes();
+            }
+            
             // Si hay match, mostrar notificación y modal
             if (data.match) {
                 setMatchNotice(`¡Match creado! 🎉 ${data.message || ''}`);
@@ -121,6 +143,15 @@ export function Match() {
             return data;
         } catch (err) {
             console.error('💥 Error in sendSwipe:', err);
+            
+            // Manejar límite de swipes alcanzado
+            if (err.response?.status === 403 && err.response?.data?.requires_subscription) {
+                setPaywallFeature('unlimited_swipes');
+                setShowPaywallModal(true);
+                refreshPremiumStatus(); // Actualizar estado
+                throw err;
+            }
+            
             let errorMessage = 'Error al enviar swipe';
             
             if (err.response?.data?.error) {
@@ -280,10 +311,20 @@ export function Match() {
     function renderFilters() {
         if (userProfileType !== 'athlete' || availableTypes.length === 0) return null;
 
+        const handleFilterClick = (filter) => {
+            // Si no es premium y intenta usar filtros específicos
+            if (!isPremium && filter !== '') {
+                setPaywallFeature('profile_filters');
+                setShowPaywallModal(true);
+                return;
+            }
+            setProfileTypeFilter(filter);
+        };
+
         return (
             <div className="mb-4 flex gap-2 flex-wrap justify-center">
                 <button
-                    onClick={() => setProfileTypeFilter('')}
+                    onClick={() => handleFilterClick('')}
                     className={`px-3 py-1 rounded-full text-sm transition-colors ${
                         profileTypeFilter === '' 
                             ? 'bg-blue-600 text-white' 
@@ -294,30 +335,59 @@ export function Match() {
                 </button>
                 {availableTypes.includes('team') && (
                     <button
-                        onClick={() => setProfileTypeFilter('team')}
-                        className={`px-3 py-1 rounded-full text-sm transition-colors ${
+                        onClick={() => handleFilterClick('team')}
+                        className={`px-3 py-1 rounded-full text-sm transition-colors flex items-center gap-1 ${
                             profileTypeFilter === 'team' 
                                 ? 'bg-blue-600 text-white' 
+                                : !isPremium
+                                ? 'bg-gray-200 dark:bg-slate-700 text-gray-500 dark:text-gray-500 cursor-pointer'
                                 : 'bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-slate-600'
                         }`}
                     >
-                        Teams
+                        Teams {!isPremium && <FaLock className="text-xs" />}
                     </button>
                 )}
                 {availableTypes.includes('agent') && (
                     <button
-                        onClick={() => setProfileTypeFilter('agent')}
-                        className={`px-3 py-1 rounded-full text-sm transition-colors ${
+                        onClick={() => handleFilterClick('agent')}
+                        className={`px-3 py-1 rounded-full text-sm transition-colors flex items-center gap-1 ${
                             profileTypeFilter === 'agent' 
                                 ? 'bg-blue-600 text-white' 
+                                : !isPremium
+                                ? 'bg-gray-200 dark:bg-slate-700 text-gray-500 dark:text-gray-500 cursor-pointer'
                                 : 'bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-slate-600'
                         }`}
                     >
-                        Agents
+                        Agents {!isPremium && <FaLock className="text-xs" />}
                     </button>
                 )}
             </div>
         );
+    }
+
+    // Función para manejar contacto directo
+    async function handleDirectContact(userId) {
+        if (!isPremium) {
+            setPaywallFeature('direct_contact');
+            setShowPaywallModal(true);
+            return;
+        }
+
+        try {
+            const data = await matchService.getDirectContact(userId);
+            setContactInfo(data);
+            setShowContactModal(true);
+        } catch (err) {
+            console.error('Error getting direct contact:', err);
+            
+            if (err.response?.status === 403 && err.response?.data?.requires_subscription) {
+                setPaywallFeature('direct_contact');
+                setShowPaywallModal(true);
+                return;
+            }
+            
+            setError(err.response?.data?.error || 'Error al obtener información de contacto');
+        }
     }
 
     return (
@@ -334,6 +404,25 @@ export function Match() {
                     <div className="flex items-center justify-center w-full max-w-md mb-4">
                         <h1 className="text-2xl font-semibold">Match</h1>
                     </div>
+
+                    {/* Contador de swipes */}
+                    {!isPremium && swipesRemaining !== null && (
+                        <div className="mb-4 px-4 py-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center gap-2">
+                            <FaBolt className="text-blue-600 dark:text-blue-400" />
+                            <span className="text-sm text-blue-800 dark:text-blue-200">
+                                {swipesRemaining} swipes restantes hoy
+                            </span>
+                        </div>
+                    )}
+
+                    {isPremium && (
+                        <div className="mb-4 px-4 py-2 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-lg flex items-center gap-2 shadow-lg">
+                            <FaBolt className="text-white" />
+                            <span className="text-sm text-white font-semibold">
+                                Premium - Swipes ilimitados ✨
+                            </span>
+                        </div>
+                    )}
 
                     
 
@@ -510,6 +599,29 @@ export function Match() {
                                                     </div>
                                                 )}
                                             </div>
+
+                                            {/* Botón de contacto directo */}
+                                            {isTop && (
+                                                <div className="mt-3 pt-3 border-t border-gray-200 dark:border-slate-700">
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            const userId = getProfileUserId(card);
+                                                            if (userId) {
+                                                                handleDirectContact(userId);
+                                                            }
+                                                        }}
+                                                        className={`w-full py-2 px-4 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+                                                            isPremium
+                                                                ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                                                                : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
+                                                        }`}
+                                                    >
+                                                        <FaPhone className="text-sm" />
+                                                        {isPremium ? 'Contacto Directo' : 'Contacto Directo 🔒'}
+                                                    </button>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -628,6 +740,20 @@ export function Match() {
                             </motion.div>
                         )}
                     </AnimatePresence>
+
+                    {/* Paywall Modal */}
+                    <PaywallModal
+                        isOpen={showPaywallModal}
+                        onClose={() => setShowPaywallModal(false)}
+                        feature={paywallFeature}
+                    />
+
+                    {/* Contact Modal */}
+                    <ContactModal
+                        isOpen={showContactModal}
+                        onClose={() => setShowContactModal(false)}
+                        contactInfo={contactInfo}
+                    />
                    
                 </div>
             )}
