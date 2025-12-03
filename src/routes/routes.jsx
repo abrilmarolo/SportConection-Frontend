@@ -13,6 +13,7 @@ import { FrequentQuestions } from "../pages/FrequentQuestions/FrequentQuestions"
 import { RegisterPartTwo } from "../pages/Register/components/RegisterPartTwo";
 import { Subscription } from "../pages/Subscription/Subscription";
 import { SubscriptionSuccess } from "../pages/Subscription/components/SubscriptionSuccess";
+import { SubscriptionCancel } from "../pages/Subscription/components/SubscriptionCancel";
 
 import { CreateLocation } from "../pages/Admin/Location/CreateLocation";
 import { CreateSport } from "../pages/Admin/Sport/CreateSport";
@@ -60,5 +61,6 @@ export const adminCreateRoutes = [
 export const registerPartTwoRoute = { path: "/RegistroTipoDeUsuario", element: <RegisterPartTwo />, name: "Registro Parte Dos" };
 export const subscriptionRoute = { path: "/Suscripcion", element: <Subscription />, name: "Suscripción Premium" };
 export const subscriptionSuccessRoute = { path: "/success", element: <SubscriptionSuccess />, name: "Suscripción Exitosa" };
+export const subscriptionCancelRoute = { path: "/cancel", element: <SubscriptionCancel />, name: "Pago Cancelado" };
 
-export const routes = [...publicRoutes, ...authRoutes, ...userRoutes, ...adminRoutes, profileRoute, subscriptionRoute, subscriptionSuccessRoute, editProfileRoute, registerPartTwoRoute, ...adminCreateRoutes];
+export const routes = [...publicRoutes, ...authRoutes, ...userRoutes, ...adminRoutes, profileRoute, subscriptionRoute, subscriptionSuccessRoute, subscriptionCancelRoute, editProfileRoute, registerPartTwoRoute, ...adminCreateRoutes];

@@ -1,90 +1,56 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { FaCheckCircle, FaBolt } from 'react-icons/fa';
+import { motion } from 'framer-motion';
 import { subscriptionService } from '../../../services/subscriptionService';
 
 export function SubscriptionSuccess() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    const [verifying, setVerifying] = useState(true);
+    const sessionId = searchParams.get('session_id');
+    
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [subscriptionData, setSubscriptionData] = useState(null);
-    const [retryMessage, setRetryMessage] = useState('');
+    const [sessionData, setSessionData] = useState(null);
 
     useEffect(() => {
         verifyPayment();
-    }, []);
+    }, [sessionId]);
 
     async function verifyPayment() {
+        if (!sessionId) {
+            setError('No se encontró ID de sesión');
+            setLoading(false);
+            return;
+        }
+
         try {
-            setVerifying(true);
+            setLoading(true);
             setError(null);
 
-            // Primero verificar el pago
-            setRetryMessage('Verificando tu pago...');
-            await subscriptionService.verifyPaymentStatus();
+            // Verificar la sesión en el backend
+            const data = await subscriptionService.verifySession(sessionId);
             
-            // Esperar un momento para que el backend procese
-            setRetryMessage('Procesando tu suscripción...');
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            
-            // Reintentar obtener la suscripción hasta 5 veces con delay
-            let attempts = 0;
-            let data = null;
-            
-            while (attempts < 5 && !data) {
-                try {
-                    setRetryMessage(`Cargando detalles de tu suscripción... (${attempts + 1}/5)`);
-                    data = await subscriptionService.getSubscriptionStatus();
-                    setSubscriptionData(data);
-                    setRetryMessage('');
-                    break;
-                } catch (err) {
-                    attempts++;
-                    // Silenciar logs de reintentos para no alarmar
-                    
-                    if (attempts < 5) {
-                        // Esperar 3 segundos antes de reintentar
-                        await new Promise(resolve => setTimeout(resolve, 3000));
-                    } else {
-                        // Último intento falló - pero no es un error crítico
-                        // El pago fue exitoso, solo falta que el backend procese la suscripción
-                        setRetryMessage('');
-                        setVerifying(false);
-                        // No lanzamos error, mostramos pantalla de éxito sin detalles
-                        return;
-                    }
-                }
+            if (!data.paid) {
+                throw new Error('El pago no se completó');
             }
+
+            setSessionData(data);
         } catch (err) {
             console.error('Error al verificar pago:', err);
-            setError('No se pudo verificar tu pago. Tu suscripción puede tardar unos minutos en activarse. Por favor recarga la página o contacta a soporte.');
+            setError(err.response?.data?.message || err.message || 'Error al verificar el pago');
         } finally {
-            setVerifying(false);
-            setRetryMessage('');
+            setLoading(false);
         }
     }
 
-    function formatDate(dateString) {
-        if (!dateString) return '';
-        // Si la fecha viene en formato YYYY-MM-DD, añadir 'T00:00:00' para evitar problemas de zona horaria
-        const dateStr = dateString.includes('T') ? dateString : `${dateString}T00:00:00`;
-        const date = new Date(dateStr);
-        return date.toLocaleDateString('es-ES', { 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric',
-            timeZone: 'UTC'
-        });
-    }
-
-    if (verifying) {
+    if (loading) {
         return (
             <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-4"></div>
                     <p className="text-xl text-gray-700 dark:text-gray-300">
-                        {retryMessage || 'Verificando tu pago...'}
+                        Verificando tu pago...
                     </p>
                     <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">
                         Por favor espera un momento
@@ -98,19 +64,21 @@ export function SubscriptionSuccess() {
         return (
             <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
                 <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-8 text-center">
-                    <div className="text-red-500 text-6xl mb-4">⚠️</div>
+                    <div className="text-red-500 text-6xl mb-4">❌</div>
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
                         Error de Verificación
                     </h1>
                     <p className="text-gray-600 dark:text-gray-400 mb-6">
                         {error}
                     </p>
-                    <button
+                    <motion.button
                         onClick={() => navigate('/Suscripcion')}
                         className="px-6 py-3 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white rounded-lg font-semibold transition-colors"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                     >
                         Volver a Suscripciones
-                    </button>
+                    </motion.button>
                 </div>
             </div>
         );
@@ -156,28 +124,37 @@ export function SubscriptionSuccess() {
                         </div>
 
                         {/* Detalles de la suscripción */}
-                        {subscriptionData && subscriptionData.subscription_details ? (
+                        {sessionData ? (
                             <div className="space-y-4 mb-8">
                                 <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                    <span className="text-gray-600 dark:text-gray-400">Plan adquirido</span>
+                                    <span className="text-gray-600 dark:text-gray-400">Plan</span>
                                     <span className="font-semibold text-gray-900 dark:text-white">
-                                        {subscriptionData.subscription_details.plan_name || 'Premium'}
+                                        {sessionData.plan_name || 'Premium'}
                                     </span>
                                 </div>
 
                                 <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                    <span className="text-gray-600 dark:text-gray-400">Fecha de inicio</span>
+                                    <span className="text-gray-600 dark:text-gray-400">Monto</span>
                                     <span className="font-semibold text-gray-900 dark:text-white">
-                                        {formatDate(subscriptionData.subscription_details.start_date)}
+                                        ${sessionData.amount} {sessionData.currency?.toUpperCase()}
                                     </span>
                                 </div>
 
                                 <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                    <span className="text-gray-600 dark:text-gray-400">Válido hasta</span>
-                                    <span className="font-semibold text-gray-900 dark:text-white">
-                                        {formatDate(subscriptionData.subscription_details.end_date)}
+                                    <span className="text-gray-600 dark:text-gray-400">Estado</span>
+                                    <span className="font-semibold text-green-600 capitalize">
+                                        {sessionData.status}
                                     </span>
                                 </div>
+
+                                {sessionData.customer_email && (
+                                    <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                        <span className="text-gray-600 dark:text-gray-400">Email</span>
+                                        <span className="font-semibold text-gray-900 dark:text-white">
+                                            {sessionData.customer_email}
+                                        </span>
+                                    </div>
+                                )}
                             </div>
                         ) : (
                             <div className="mb-8 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
@@ -187,15 +164,32 @@ export function SubscriptionSuccess() {
                             </div>
                         )}
 
-                        {/* Botón de acción */}
-                        <button
-                            onClick={() => navigate('/')}
-                            className="w-full py-3 px-6 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white rounded-lg font-semibold transition-all transform hover:scale-105"
-                        >
-                            Ir al Inicio
-                        </button>
+                        {/* Botones de acción */}
+                        <div className="space-y-3">
+                            <motion.button
+                                onClick={() => navigate('/')}
+                                className="w-full py-4 px-6 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white rounded-lg font-semibold transition-all shadow-lg"
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                            >
+                                Ir al Inicio
+                            </motion.button>
 
-                        
+                            <motion.button
+                                onClick={() => navigate('/Perfil')}
+                                className="w-full py-4 px-6 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg font-semibold transition-all"
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                            >
+                                Ver mi Perfil
+                            </motion.button>
+                        </div>
+
+                        {sessionData?.subscription_id && (
+                            <p className="text-xs text-gray-500 dark:text-gray-500 mt-6 text-center">
+                                ID de transacción: {sessionData.subscription_id}
+                            </p>
+                        )}
                     </div>
                 </div>
 
