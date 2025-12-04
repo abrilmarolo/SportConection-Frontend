@@ -308,50 +308,50 @@ export function Subscription() {
                             </div>
                         ) : (
                             /* Plans grid */
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            <div className="flex justify-center">
                                 {plans.map((plan) => (
                                     <div
                                         key={plan.id}
-                                        className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-shadow"
+                                        className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-shadow max-w-2xl w-full"
                                     >
-                                        <div className="p-8">
-                                            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                                        <div className="p-12">
+                                            <h3 className="text-4xl font-bold text-gray-900 dark:text-white mb-6 text-center">
                                                 {plan.name}
                                             </h3>
-                                            <div className="mb-6">
-                                                <span className="text-4xl font-bold text-blue-600 dark:text-blue-700">
+                                            <div className="mb-8 text-center">
+                                                <span className="text-6xl font-bold text-blue-600 dark:text-blue-700">
                                                     ${plan.price}
                                                 </span>
-                                                <span className="text-gray-600 dark:text-gray-400 ml-2">
+                                                <span className="text-xl text-gray-600 dark:text-gray-400 ml-2">
                                                     / mes
                                                 </span>
                                             </div>
 
                                             {/* Beneficios Premium */}
-                                            <div className="mb-6 bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
-                                                <h4 className="font-semibold text-blue-900 dark:text-blue-300 mb-3 flex items-center gap-2">
-                                                    <FaBolt className="text-blue-500" />
+                                            <div className="mb-8 bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6">
+                                                <h4 className="font-semibold text-blue-900 dark:text-blue-300 mb-4 flex items-center justify-center gap-2 text-lg">
+                                                    <FaBolt className="text-blue-500 text-xl" />
                                                     Beneficios Premium:
                                                 </h4>
-                                                <ul className="space-y-2">
-                                                    <li className="flex items-start gap-2 text-sm text-blue-800 dark:text-blue-200">
-                                                        <span className="text-green-500 mt-0.5">✓</span>
+                                                <ul className="space-y-3">
+                                                    <li className="flex items-start gap-3 text-base text-blue-800 dark:text-blue-200">
+                                                        <span className="text-green-500 mt-0.5 text-xl">✓</span>
                                                         <span>Filtra por equipos o agentes</span>
                                                     </li>
-                                                    <li className="flex items-start gap-2 text-sm text-blue-800 dark:text-blue-200">
-                                                        <span className="text-green-500 mt-0.5">✓</span>
+                                                    <li className="flex items-start gap-3 text-base text-blue-800 dark:text-blue-200">
+                                                        <span className="text-green-500 mt-0.5 text-xl">✓</span>
                                                         <span>Encuentra exactamente lo que buscas</span>
                                                     </li>
-                                                    <li className="flex items-start gap-2 text-sm text-blue-800 dark:text-blue-200">
-                                                        <span className="text-green-500 mt-0.5">✓</span>
+                                                    <li className="flex items-start gap-3 text-base text-blue-800 dark:text-blue-200">
+                                                        <span className="text-green-500 mt-0.5 text-xl">✓</span>
                                                         <span>Ahorra tiempo en tu búsqueda</span>
                                                     </li>
-                                                    <li className="flex items-start gap-2 text-sm text-blue-800 dark:text-blue-200">
-                                                        <span className="text-green-500 mt-0.5">✓</span>
+                                                    <li className="flex items-start gap-3 text-base text-blue-800 dark:text-blue-200">
+                                                        <span className="text-green-500 mt-0.5 text-xl">✓</span>
                                                         <span>Swipes ilimitados</span>
                                                     </li>
-                                                    <li className="flex items-start gap-2 text-sm text-blue-800 dark:text-blue-200">
-                                                        <span className="text-green-500 mt-0.5">✓</span>
+                                                    <li className="flex items-start gap-3 text-base text-blue-800 dark:text-blue-200">
+                                                        <span className="text-green-500 mt-0.5 text-xl">✓</span>
                                                         <span>Contacto directo sin match</span>
                                                     </li>
                                                 </ul>
@@ -360,13 +360,13 @@ export function Subscription() {
                                             <motion.button
                                                 onClick={() => handleAcquirePlan(plan.id)}
                                                 disabled={processingCheckout !== null || !isAuthenticated}
-                                                className="w-full py-3 px-6 rounded-lg font-semibold transition-colors bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white cursor-pointer disabled:bg-gray-300 disabled:dark:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed"
+                                                className="w-full py-4 px-6 rounded-lg font-semibold text-lg transition-colors bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white cursor-pointer disabled:bg-gray-300 disabled:dark:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed"
                                                 whileTap={{ scale: 0.95 }}
                                                 transition={{ duration: 0.1 }}
                                             >
                                                 {processingCheckout === plan.id ? (
                                                     <span className="flex items-center justify-center gap-2">
-                                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                                                         Procesando...
                                                     </span>
                                                 ) : !isAuthenticated ? (
