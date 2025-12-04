@@ -327,6 +327,36 @@ export function Subscription() {
                                                 </span>
                                             </div>
 
+                                            {/* Beneficios Premium */}
+                                            <div className="mb-6 bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+                                                <h4 className="font-semibold text-blue-900 dark:text-blue-300 mb-3 flex items-center gap-2">
+                                                    <FaBolt className="text-blue-500" />
+                                                    Beneficios Premium:
+                                                </h4>
+                                                <ul className="space-y-2">
+                                                    <li className="flex items-start gap-2 text-sm text-blue-800 dark:text-blue-200">
+                                                        <span className="text-green-500 mt-0.5">✓</span>
+                                                        <span>Filtra por equipos o agentes</span>
+                                                    </li>
+                                                    <li className="flex items-start gap-2 text-sm text-blue-800 dark:text-blue-200">
+                                                        <span className="text-green-500 mt-0.5">✓</span>
+                                                        <span>Encuentra exactamente lo que buscas</span>
+                                                    </li>
+                                                    <li className="flex items-start gap-2 text-sm text-blue-800 dark:text-blue-200">
+                                                        <span className="text-green-500 mt-0.5">✓</span>
+                                                        <span>Ahorra tiempo en tu búsqueda</span>
+                                                    </li>
+                                                    <li className="flex items-start gap-2 text-sm text-blue-800 dark:text-blue-200">
+                                                        <span className="text-green-500 mt-0.5">✓</span>
+                                                        <span>Swipes ilimitados</span>
+                                                    </li>
+                                                    <li className="flex items-start gap-2 text-sm text-blue-800 dark:text-blue-200">
+                                                        <span className="text-green-500 mt-0.5">✓</span>
+                                                        <span>Contacto directo sin match</span>
+                                                    </li>
+                                                </ul>
+                                            </div>
+
                                             <motion.button
                                                 onClick={() => handleAcquirePlan(plan.id)}
                                                 disabled={processingCheckout !== null || !isAuthenticated}

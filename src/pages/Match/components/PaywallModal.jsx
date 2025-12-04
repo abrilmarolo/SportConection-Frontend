@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaTimes, FaBolt, FaFilter, FaPhone } from 'react-icons/fa';
+import { FaTimes, FaBolt, FaFilter, FaPhone, FaSearch, FaBullseye, FaPhoneAlt } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 
 export function PaywallModal({ isOpen, onClose, feature = 'unlimited_swipes' }) {
@@ -10,7 +10,7 @@ export function PaywallModal({ isOpen, onClose, feature = 'unlimited_swipes' }) 
 
     const features = {
         unlimited_swipes: {
-            title: '¡Límite de Swipes Alcanzado! 🎯',
+            title: '¡Límite de Swipes Alcanzado!',
             message: 'Has usado tus 10 swipes gratuitos de hoy.',
             benefits: [
                 'Swipes ilimitados cada día',
@@ -21,7 +21,7 @@ export function PaywallModal({ isOpen, onClose, feature = 'unlimited_swipes' }) 
             ]
         },
         profile_filters: {
-            title: 'Filtros Avanzados 🔍',
+            title: 'Filtros Avanzados',
             message: 'Los filtros por tipo de perfil son exclusivos para usuarios premium.',
             benefits: [
                 'Filtra por equipos o agentes',
@@ -32,7 +32,7 @@ export function PaywallModal({ isOpen, onClose, feature = 'unlimited_swipes' }) 
             ]
         },
         direct_contact: {
-            title: 'Contacto Directo 📱',
+            title: 'Contacto Directo',
             message: 'El contacto directo sin match es exclusivo para usuarios premium.',
             benefits: [
                 'Contacta sin necesidad de match',
@@ -64,7 +64,7 @@ export function PaywallModal({ isOpen, onClose, feature = 'unlimited_swipes' }) 
                 {/* Header */}
                 <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
-                        <FaBolt className="text-2xl text-yellow-500" />
+                        <FaBolt className="text-2xl text-blue-500" />
                         <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                             Actualiza a Premium
                         </h2>
@@ -79,7 +79,10 @@ export function PaywallModal({ isOpen, onClose, feature = 'unlimited_swipes' }) 
 
                 {/* Content */}
                 <div className="mb-6">
-                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-2">
+                        {feature === 'profile_filters' && <FaSearch className="text-blue-500" />}
+                        {feature === 'unlimited_swipes' && <FaBullseye className="text-blue-500" />}
+                        {feature === 'direct_contact' && <FaPhoneAlt className="text-blue-500" />}
                         {featureData.title}
                     </h3>
                     <p className="text-gray-600 dark:text-gray-400 mb-4">
@@ -88,7 +91,7 @@ export function PaywallModal({ isOpen, onClose, feature = 'unlimited_swipes' }) 
 
                     <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 mb-4">
                         <h4 className="font-semibold text-blue-900 dark:text-blue-300 mb-3 flex items-center gap-2">
-                            <FaBolt className="text-yellow-500" />
+                            <FaBolt className="text-blue-500" />
                             Beneficios Premium:
                         </h4>
                         <ul className="space-y-2">
