@@ -3,7 +3,8 @@ import { useAuth } from '../../context/AuthContext';
 import { usePremium } from '../../context/PremiumContext';
 import { matchService } from '../../services/matchService';
 import { FaInstagram, FaTwitter, FaTimes, FaStar, FaBolt, FaCheck, FaPhone, FaLock, FaExclamationTriangle } from 'react-icons/fa';
-import { AnimatePresence } from 'framer-motion';
+import { HiSparkles } from 'react-icons/hi';
+import { motion, AnimatePresence } from 'framer-motion';
 import { PaywallModal } from './components/PaywallModal';
 import { ContactModal } from './components/ContactModal';
 
