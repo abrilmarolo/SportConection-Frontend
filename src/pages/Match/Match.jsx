@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react'
 import { useAuth } from '../../context/AuthContext';
 import { usePremium } from '../../context/PremiumContext';
 import { matchService } from '../../services/matchService';
-import { FaInstagram, FaTwitter, FaTimes, FaStar, FaBolt, FaCheck, FaPhone, FaLock } from 'react-icons/fa';
+import { FaInstagram, FaTwitter, FaTimes, FaStar, FaBolt, FaCheck, FaPhone, FaLock, FaExclamationTriangle } from 'react-icons/fa';
 import { AnimatePresence } from 'framer-motion';
 import { PaywallModal } from './components/PaywallModal';
 import { ContactModal } from './components/ContactModal';
@@ -43,11 +43,7 @@ export function Match() {
                 params.profile_type_filter = profileTypeFilter;
             }
             
-            console.log('🔍 Fetching discover with params:', params);
-            
             const data = await matchService.getDiscover(params);
-            
-            console.log('✅ Discover response:', data);
             
             if (!data.success) {
                 throw new Error(data.error || 'Error desconocido del servidor');
@@ -65,8 +61,6 @@ export function Match() {
             }
             
         } catch (err) {
-            console.error('💥 Error in fetchDiscover:', err);
-            
             // Manejar error de filtros premium
             if (err.response?.status === 403 && err.response?.data?.requires_subscription) {
                 setPaywallFeature('profile_filters');
@@ -113,11 +107,7 @@ export function Match() {
 
     async function sendSwipe(swipedUserId, action, userName) {
         try {
-            console.log(`🎯 Sending swipe: ${action} for user ${swipedUserId}`);
-            
             const data = await matchService.sendSwipe(swipedUserId, action);
-            
-            console.log('📤 Swipe response:', data);
             
             // Según la API, la respuesta es: { success: true, match: true/false, message: "..." }
             if (!data.success) {
@@ -131,7 +121,7 @@ export function Match() {
             
             // Si hay match, mostrar notificación y modal
             if (data.match) {
-                setMatchNotice(`¡Match creado! 🎉 ${data.message || ''}`);
+                setMatchNotice(`¡Match creado!  ${data.message || ''}`);
                 setTimeout(() => setMatchNotice(null), 4000);
                 
                 // Mostrar modal de match con el nombre del usuario
@@ -142,8 +132,6 @@ export function Match() {
             
             return data;
         } catch (err) {
-            console.error('💥 Error in sendSwipe:', err);
-            
             // Manejar límite de swipes alcanzado
             if (err.response?.status === 403 && err.response?.data?.requires_subscription) {
                 setPaywallFeature('unlimited_swipes');
@@ -401,7 +389,7 @@ export function Match() {
                 </div>
             ) : (
                 <div className="min-h-screen p-4 dark:text-white flex flex-col items-center">
-                    <div className="flex items-center justify-center w-full max-w-md mb-4">
+                    <div className="flex items-center justify-center w-full max-w-md mb-2">
                         <h1 className="text-2xl font-semibold">Match</h1>
                     </div>
 
@@ -418,8 +406,8 @@ export function Match() {
                     {isPremium && (
                         <div className="mb-4 px-4 py-2 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-lg flex items-center gap-2 shadow-lg">
                             <FaBolt className="text-white" />
-                            <span className="text-sm text-white font-semibold">
-                                Premium - Swipes ilimitados ✨
+                            <span className="text-sm text-white font-semibold flex items-center gap-1">
+                                Premium - Swipes ilimitados 
                             </span>
                         </div>
                     )}
@@ -441,7 +429,7 @@ export function Match() {
                     {error && (
                         <div className="mb-4 p-4 bg-red-100 dark:bg-red-900 border border-red-400 text-red-700 dark:text-red-100 rounded max-w-md">
                             <div className="flex items-start gap-2">
-                                <span className="text-red-500">⚠️</span>
+                                <FaExclamationTriangle className="text-red-500 text-lg mt-0.5" />
                                 <div className="flex-1">
                                     <p className="font-semibold">Error:</p>
                                     <p className="text-sm mt-1">{error}</p>
@@ -468,7 +456,7 @@ export function Match() {
                     {/* Match notice */}
                     {matchNotice && (
                         <div className="mb-4 px-4 py-2 bg-green-600 text-white rounded-lg shadow-lg flex items-center gap-2">
-                            <span>🎉</span>
+                            <FaStar className="text-yellow-300" />
                             <span>{matchNotice}</span>
                         </div>
                     )}
@@ -618,7 +606,11 @@ export function Match() {
                                                         }`}
                                                     >
                                                         <FaPhone className="text-sm" />
-                                                        {isPremium ? 'Contacto Directo' : 'Contacto Directo 🔒'}
+                                                        {isPremium ? 'Contacto Directo' : (
+                                                            <>
+                                                                Contacto Directo <FaLock className="text-xs ml-1" />
+                                                            </>
+                                                        )}
                                                     </button>
                                                 </div>
                                             )}
