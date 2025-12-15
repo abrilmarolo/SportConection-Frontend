@@ -726,7 +726,6 @@ export function Match() {
                                             className="w-full px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 dark:from-blue-600 dark:to-blue-800 text-white text-lg rounded-xl font-bold shadow-lg hover:shadow-2xl transition-shadow duration-200 flex items-center justify-center gap-2"
                                         >
                                             Continuar
-                                            <FaStar className="text-xl" />
                                         </motion.button>
                                     </div>
                                 </motion.div>

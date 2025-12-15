@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext'
 import api from '../../services/api'
 import { motion } from 'framer-motion'
 import { toast } from 'react-toastify'
+import Swal from 'sweetalert2'
 
 // Clase PostUser - Equivalente a PostUser.java
 class PostUser {
@@ -257,26 +258,44 @@ export function Post() {
 
   // Función para eliminar publicación
   const handleDeletePost = async (postId) => {
-    if (!window.confirm('¿Eliminar esta publicación?')) return
+    const result = await Swal.fire({
+      title: '¿Eliminar publicación?',
+      text: 'Esta acción no se puede deshacer',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#EF4444',
+      cancelButtonColor: '#6B7280',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+      focusCancel: true
+    })
+
+    if (!result.isConfirmed) return
 
     try {
       setLoadingPosts(true)
       setError('')
       await api.delete(`/posts/${postId}`)
       
-      toast.success('¡Publicación eliminada exitosamente!', {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true
+      await Swal.fire({
+        title: '¡Eliminada!',
+        text: 'La publicación ha sido eliminada exitosamente',
+        icon: 'success',
+        confirmButtonColor: '#3B82F6',
+        confirmButtonText: 'Entendido',
+        timer: 2000
       })
       
       await loadPosts()
     } catch (err) {
       setError('Error al eliminar publicación')
       console.error(err)
+      await Swal.fire({
+        title: 'Error',
+        text: 'No se pudo eliminar la publicación',
+        icon: 'error',
+        confirmButtonColor: '#3B82F6'
+      })
     } finally {
       setLoadingPosts(false)
     }
