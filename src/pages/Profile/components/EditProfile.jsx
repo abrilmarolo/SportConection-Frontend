@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Select from 'react-select';
 import { authService } from '../../../services/authService';
 import { locationService } from '../../../services/locationService';
 import { sportService } from '../../../services/sportService';
@@ -18,6 +19,9 @@ export function EditProfile() {
   const [locations, setLocations] = useState([]);
   const [sports, setSports] = useState([]);
   const fileInputRef = useRef(null);
+  const [isDarkMode, setIsDarkMode] = useState(
+    () => document.documentElement.classList.contains('dark')
+  );
 
   useEffect(() => {
     const load = async () => {
@@ -25,7 +29,15 @@ export function EditProfile() {
         setLoading(true);
         const data = await authService.getMyProfile();
         setProfileType(data.profileType);
-        setProfile(data.profile || {});
+        
+        // Normalizar la fecha de nacimiento si existe
+        const profileWithNormalizedDate = { ...data.profile };
+        if (profileWithNormalizedDate?.birthdate) {
+          // Extraer solo la parte de la fecha (YYYY-MM-DD) sin la hora
+          profileWithNormalizedDate.birthdate = profileWithNormalizedDate.birthdate.split('T')[0];
+        }
+        
+        setProfile(profileWithNormalizedDate || {});
         const locs = await locationService.getAllLocations();
         setLocations(locs || []);
         const spts = await sportService.getAllSports();
@@ -40,9 +52,83 @@ export function EditProfile() {
     load();
   }, []);
 
+  useEffect(() => {
+    // Observer para detectar cambios en el tema
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class') {
+          setIsDarkMode(document.documentElement.classList.contains('dark'));
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setProfile(prev => ({ ...prev, [name]: value }));
+  };
+
+  // Estilos personalizados para react-select que se actualizan con el tema
+  const customStyles = {
+    control: (base, state) => ({
+      ...base,
+      backgroundColor: isDarkMode ? '#374151' : 'white',
+      borderColor: state.isFocused 
+        ? (isDarkMode ? '#60a5fa' : '#3b82f6')
+        : (isDarkMode ? '#4b5563' : '#d1d5db'),
+      boxShadow: state.isFocused 
+        ? (isDarkMode 
+            ? '0 0 0 2px rgba(96, 165, 250, 0.5)' 
+            : '0 0 0 2px rgba(59, 130, 246, 0.5)') 
+        : 'none',
+      '&:hover': {
+        borderColor: isDarkMode ? '#60a5fa' : '#3b82f6'
+      },
+      padding: '0.125rem',
+      minHeight: '42px'
+    }),
+    menu: (base) => ({
+      ...base,
+      backgroundColor: isDarkMode ? '#374151' : 'white',
+      border: `1px solid ${isDarkMode ? '#4b5563' : '#d1d5db'}`,
+      zIndex: 9999
+    }),
+    option: (base, state) => ({
+      ...base,
+      backgroundColor: state.isFocused 
+        ? '#3b82f6' 
+        : (isDarkMode ? '#374151' : 'white'),
+      color: state.isFocused 
+        ? 'white' 
+        : (isDarkMode ? 'white' : 'black'),
+      cursor: 'pointer',
+      '&:active': {
+        backgroundColor: '#2563eb'
+      }
+    }),
+    singleValue: (base) => ({
+      ...base,
+      color: isDarkMode ? 'white' : 'black'
+    }),
+    input: (base) => ({
+      ...base,
+      color: isDarkMode ? 'white' : 'black'
+    }),
+    placeholder: (base) => ({
+      ...base,
+      color: isDarkMode ? '#9ca3af' : '#6b7280'
+    }),
+    menuList: (base) => ({
+      ...base,
+      padding: 0
+    })
   };
 
   const handleFile = async (e) => {
@@ -251,22 +337,32 @@ export function EditProfile() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-gray-700 dark:text-gray-200 mb-2">Deporte</label>
-              <select name="sport_id" value={profile?.sport_id || profile?.sport?.id || ''} onChange={handleChange}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                <option value="">Seleccione</option>
-                {sports.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-              </select>
+              <Select
+                options={sports.map(s => ({ value: s.id, label: s.name }))}
+                value={sports.find(s => s.id === (profile?.sport_id || profile?.sport?.id)) ? { value: profile?.sport_id || profile?.sport?.id, label: sports.find(s => s.id === (profile?.sport_id || profile?.sport?.id))?.name } : null}
+                onChange={(option) => setProfile(prev => ({ ...prev, sport_id: option?.value || '' }))}
+                placeholder="Buscar deporte..."
+                isClearable
+                isSearchable
+                styles={customStyles}
+                className="react-select-container"
+                classNamePrefix="react-select"
+              />
             </div>
 
             <div>
               <label className="block text-gray-700 dark:text-gray-200 mb-2">Ubicación</label>
-              <select name="location_id" value={profile?.location_id || profile?.location?.id || ''} onChange={handleChange}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                <option value="">Seleccione</option>
-                {locations.map(l => (
-                  <option key={l.id} value={l.id}>{[l.city, l.province, l.country].filter(Boolean).join(', ')}</option>
-                ))}
-              </select>
+              <Select
+                options={locations.map(l => ({ value: l.id, label: [l.city, l.province, l.country].filter(Boolean).join(', ') }))}
+                value={locations.find(l => l.id === (profile?.location_id || profile?.location?.id)) ? { value: profile?.location_id || profile?.location?.id, label: [locations.find(l => l.id === (profile?.location_id || profile?.location?.id))?.city, locations.find(l => l.id === (profile?.location_id || profile?.location?.id))?.province, locations.find(l => l.id === (profile?.location_id || profile?.location?.id))?.country].filter(Boolean).join(', ') } : null}
+                onChange={(option) => setProfile(prev => ({ ...prev, location_id: option?.value || '' }))}
+                placeholder="Buscar ubicación..."
+                isClearable
+                isSearchable
+                styles={customStyles}
+                className="react-select-container"
+                classNamePrefix="react-select"
+              />
             </div>
           </div>
 

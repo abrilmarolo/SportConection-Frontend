@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Select from 'react-select';
 import { locationService } from '../../../services/locationService';
 import { sportService } from '../../../services/sportService';
 import { authService } from '../../../services/authService';
@@ -31,6 +32,9 @@ export function RegisterPartTwo() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [registrationData, setRegistrationData] = useState(null);
+  const [isDarkMode, setIsDarkMode] = useState(
+    () => document.documentElement.classList.contains('dark')
+  );
 
   useEffect(() => {
     // Recuperar datos de registro de la pantalla anterior
@@ -42,6 +46,24 @@ export function RegisterPartTwo() {
       navigate('/Registro');
     }
   }, [navigate]);
+
+  useEffect(() => {
+    // Observer para detectar cambios en el tema
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class') {
+          setIsDarkMode(document.documentElement.classList.contains('dark'));
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const fetchLocations = async () => {
@@ -70,6 +92,62 @@ export function RegisterPartTwo() {
 
     fetchSports();
   }, []);
+
+  // Estilos personalizados para react-select que se actualizan con el tema
+  const customStyles = {
+    control: (base, state) => ({
+      ...base,
+      backgroundColor: isDarkMode ? '#374151' : 'white',
+      borderColor: state.isFocused 
+        ? (isDarkMode ? '#60a5fa' : '#3b82f6')
+        : (isDarkMode ? '#4b5563' : '#d1d5db'),
+      boxShadow: state.isFocused 
+        ? (isDarkMode 
+            ? '0 0 0 2px rgba(96, 165, 250, 0.5)' 
+            : '0 0 0 2px rgba(59, 130, 246, 0.5)') 
+        : 'none',
+      '&:hover': {
+        borderColor: isDarkMode ? '#60a5fa' : '#3b82f6'
+      },
+      padding: '0.125rem',
+      minHeight: '42px'
+    }),
+    menu: (base) => ({
+      ...base,
+      backgroundColor: isDarkMode ? '#374151' : 'white',
+      border: `1px solid ${isDarkMode ? '#4b5563' : '#d1d5db'}`,
+      zIndex: 9999
+    }),
+    option: (base, state) => ({
+      ...base,
+      backgroundColor: state.isFocused 
+        ? '#3b82f6' 
+        : (isDarkMode ? '#374151' : 'white'),
+      color: state.isFocused 
+        ? 'white' 
+        : (isDarkMode ? 'white' : 'black'),
+      cursor: 'pointer',
+      '&:active': {
+        backgroundColor: '#2563eb'
+      }
+    }),
+    singleValue: (base) => ({
+      ...base,
+      color: isDarkMode ? 'white' : 'black'
+    }),
+    input: (base) => ({
+      ...base,
+      color: isDarkMode ? 'white' : 'black'
+    }),
+    placeholder: (base) => ({
+      ...base,
+      color: isDarkMode ? '#9ca3af' : '#6b7280'
+    }),
+    menuList: (base) => ({
+      ...base,
+      padding: 0
+    })
+  };
 
   // Mapear tipos de perfil del frontend al backend
   const mapProfileType = (frontendType) => {
@@ -287,36 +365,29 @@ export function RegisterPartTwo() {
                     className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-700"
                   />
                   
-                  <select
-                    id="sport_id"
-                    name="sport_id"
-                    value={formData.sport_id || ""}
-                    onChange={handleChange}
-                    required
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white dark:bg-gray-700 text-black dark:text-white"
-                  >
-                    <option value="" disabled>Seleccionar un deporte</option>
-                    {deportes.map(deporte => (
-                      <option key={deporte.id} value={deporte.id}>
-                        {deporte.name}
-                      </option>
-                    ))}
-                  </select>
-                  <select
-                    id="location_id"
-                    name="location_id"
-                    value={formData.location_id || ""}
-                    onChange={handleChange}
-                    required
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white dark:bg-gray-700 text-black dark:text-white"
-                  >
-                    <option value="" disabled>Seleccionar una ubicación</option>
-                    {ubicaciones.map(ubicacion => (
-                      <option key={ubicacion.id} value={ubicacion.id}>
-                        {ubicacion.country} - {ubicacion.province} - {ubicacion.city}
-                      </option>
-                    ))}
-                  </select>
+                  <Select
+                    options={deportes.map(d => ({ value: d.id, label: d.name }))}
+                    value={deportes.find(d => d.id === parseInt(formData.sport_id)) ? { value: formData.sport_id, label: deportes.find(d => d.id === parseInt(formData.sport_id)).name } : null}
+                    onChange={(option) => setFormData(prev => ({ ...prev, sport_id: option?.value || '' }))}
+                    placeholder="Buscar deporte..."
+                    isClearable
+                    isSearchable
+                    styles={customStyles}
+                    className="react-select-container"
+                    classNamePrefix="react-select"
+                  />
+                  
+                  <Select
+                    options={ubicaciones.map(u => ({ value: u.id, label: `${u.country} - ${u.province} - ${u.city}` }))}
+                    value={ubicaciones.find(u => u.id === parseInt(formData.location_id)) ? { value: formData.location_id, label: `${ubicaciones.find(u => u.id === parseInt(formData.location_id)).country} - ${ubicaciones.find(u => u.id === parseInt(formData.location_id)).province} - ${ubicaciones.find(u => u.id === parseInt(formData.location_id)).city}` } : null}
+                    onChange={(option) => setFormData(prev => ({ ...prev, location_id: option?.value || '' }))}
+                    placeholder="Buscar ubicación..."
+                    isClearable
+                    isSearchable
+                    styles={customStyles}
+                    className="react-select-container"
+                    classNamePrefix="react-select"
+                  />
                   <input
                     type="text"
                     name="phone_number"
@@ -382,36 +453,28 @@ export function RegisterPartTwo() {
                     required
                     className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-700"
                   />
-                  <select
-                    id="sport_id"
-                    name="sport_id"
-                    value={formData.sport_id || ""}
-                    onChange={handleChange}
-                    required
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white dark:bg-gray-700 text-black dark:text-white"
-                  >
-                    <option value="" disabled>Seleccionar un deporte</option>
-                    {deportes.map(deporte => (
-                      <option key={deporte.id} value={deporte.id}>
-                        {deporte.name}
-                      </option>
-                    ))}
-                  </select>
-                  <select
-                    id="location_id"
-                    name="location_id"
-                    value={formData.location_id || ""}
-                    onChange={handleChange}
-                    required
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white dark:bg-gray-700 text-black dark:text-white"
-                  >
-                    <option value="" disabled>Seleccionar una ubicación</option>
-                    {ubicaciones.map(ubicacion => (
-                      <option key={ubicacion.id} value={ubicacion.id}>
-                        {ubicacion.country} - {ubicacion.province} - {ubicacion.city}
-                      </option>
-                    ))}
-                  </select>
+                  <Select
+                    options={deportes.map(d => ({ value: d.id, label: d.name }))}
+                    value={deportes.find(d => d.id === parseInt(formData.sport_id)) ? { value: formData.sport_id, label: deportes.find(d => d.id === parseInt(formData.sport_id)).name } : null}
+                    onChange={(option) => setFormData(prev => ({ ...prev, sport_id: option?.value || '' }))}
+                    placeholder="Buscar deporte..."
+                    isClearable
+                    isSearchable
+                    styles={customStyles}
+                    className="react-select-container"
+                    classNamePrefix="react-select"
+                  />
+                  <Select
+                    options={ubicaciones.map(u => ({ value: u.id, label: `${u.country} - ${u.province} - ${u.city}` }))}
+                    value={ubicaciones.find(u => u.id === parseInt(formData.location_id)) ? { value: formData.location_id, label: `${ubicaciones.find(u => u.id === parseInt(formData.location_id)).country} - ${ubicaciones.find(u => u.id === parseInt(formData.location_id)).province} - ${ubicaciones.find(u => u.id === parseInt(formData.location_id)).city}` } : null}
+                    onChange={(option) => setFormData(prev => ({ ...prev, location_id: option?.value || '' }))}
+                    placeholder="Buscar ubicación..."
+                    isClearable
+                    isSearchable
+                    styles={customStyles}
+                    className="react-select-container"
+                    classNamePrefix="react-select"
+                  />
                   <input
                     type="text"
                     name="phone_number"
@@ -477,36 +540,28 @@ export function RegisterPartTwo() {
                     required
                     className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-700"
                   />
-                  <select
-                    id="sport_id"
-                    name="sport_id"
-                    value={formData.sport_id || ""}
-                    onChange={handleChange}
-                    required
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white dark:bg-gray-700 text-black dark:text-white"
-                  >
-                    <option value="" disabled>Seleccionar un deporte</option>
-                    {deportes.map(deporte => (
-                      <option key={deporte.id} value={deporte.id}>
-                        {deporte.name}
-                      </option>
-                    ))}
-                  </select>
-                  <select
-                    id="location_id"
-                    name="location_id"
-                    value={formData.location_id || ""}
-                    onChange={handleChange}
-                    required
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white dark:bg-gray-700 text-black dark:text-white"
-                  >
-                    <option value="" disabled>Seleccionar una ubicación</option>
-                    {ubicaciones.map(ubicacion => (
-                      <option key={ubicacion.id} value={ubicacion.id}>
-                        {ubicacion.country} - {ubicacion.province} - {ubicacion.city}
-                      </option>
-                    ))}
-                  </select>
+                  <Select
+                    options={deportes.map(d => ({ value: d.id, label: d.name }))}
+                    value={deportes.find(d => d.id === parseInt(formData.sport_id)) ? { value: formData.sport_id, label: deportes.find(d => d.id === parseInt(formData.sport_id)).name } : null}
+                    onChange={(option) => setFormData(prev => ({ ...prev, sport_id: option?.value || '' }))}
+                    placeholder="Buscar deporte..."
+                    isClearable
+                    isSearchable
+                    styles={customStyles}
+                    className="react-select-container"
+                    classNamePrefix="react-select"
+                  />
+                  <Select
+                    options={ubicaciones.map(u => ({ value: u.id, label: `${u.country} - ${u.province} - ${u.city}` }))}
+                    value={ubicaciones.find(u => u.id === parseInt(formData.location_id)) ? { value: formData.location_id, label: `${ubicaciones.find(u => u.id === parseInt(formData.location_id)).country} - ${ubicaciones.find(u => u.id === parseInt(formData.location_id)).province} - ${ubicaciones.find(u => u.id === parseInt(formData.location_id)).city}` } : null}
+                    onChange={(option) => setFormData(prev => ({ ...prev, location_id: option?.value || '' }))}
+                    placeholder="Buscar ubicación..."
+                    isClearable
+                    isSearchable
+                    styles={customStyles}
+                    className="react-select-container"
+                    classNamePrefix="react-select"
+                  />
                   <input
                     type="text"
                     name="phone_number"

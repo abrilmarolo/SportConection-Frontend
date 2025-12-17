@@ -142,6 +142,12 @@ export function Profile() {
     }
   };
 
+  const formatDateWithoutOffset = (dateString) => {
+    if (!dateString) return '';
+    const [year, month, day] = dateString.split('T')[0].split('-');
+    return new Date(year, month - 1, day).toLocaleDateString('es-ES');
+  };
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -411,7 +417,7 @@ export function Profile() {
                           <div className="flex justify-between">
                             <span className="text-gray-600 dark:text-gray-400">Fecha de nacimiento</span>
                             <span className="font-medium text-gray-900 dark:text-white">
-                              {new Date(profileData.profile.birthdate).toLocaleDateString('es-ES')}
+                              {formatDateWithoutOffset(profileData.profile.birthdate)}
                             </span>
                           </div>
                         )}
