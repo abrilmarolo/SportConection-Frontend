@@ -46,11 +46,14 @@ export function Profile() {
       
       const response = await profilePhotoService.uploadPhoto(file);
       
+      // Esperar un momento para que el backend procese la imagen
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       // Actualizar los datos del perfil para mostrar la nueva foto
       await fetchProfile();
       
       // Notificar a otros componentes que la foto se actualizó
-      window.dispatchEvent(new CustomEvent('profilePhotoUpdated'));
+      window.dispatchEvent(new CustomEvent('profilePhotoUpdated', { detail: { timestamp: Date.now() } }));
       
       console.log('Foto subida exitosamente:', response);
     } catch (error) {
@@ -83,11 +86,14 @@ export function Profile() {
       
       await profilePhotoService.deletePhoto();
       
+      // Esperar un momento para que el backend procese la eliminación
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       // Actualizar los datos del perfil
       await fetchProfile();
       
       // Notificar a otros componentes que la foto se actualizó
-      window.dispatchEvent(new CustomEvent('profilePhotoUpdated'));
+      window.dispatchEvent(new CustomEvent('profilePhotoUpdated', { detail: { timestamp: Date.now() } }));
       
       console.log('Foto eliminada exitosamente');
     } catch (error) {
@@ -236,9 +242,10 @@ export function Profile() {
               <div className="w-40 h-40 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-700 flex items-center justify-center border-4 border-gray-200">
                 {profileData?.profile?.photo_url ? (
                   <img 
-                    src={profileData.profile.photo_url} 
+                    src={`${profileData.profile.photo_url}?t=${new Date().getTime()}`} 
                     alt="Foto de perfil" 
                     className="w-full h-full object-cover"
+                    key={profileData.profile.photo_url}
                   />
                 ) : (
                    

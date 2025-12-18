@@ -85,9 +85,10 @@ export function UserButtons({ user }) {
           <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 flex items-center justify-center border-2 border-gray-300 dark:border-gray-600 group-hover:border-blue-500 dark:group-hover:border-blue-400 transition-colors">
             {profilePhoto ? (
               <img
-                src={profilePhoto}
+                src={`${profilePhoto}?t=${new Date().getTime()}`}
                 alt="Mi perfil"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                key={profilePhoto}
                 onError={(e) => {
                   console.log('Error loading profile image, showing fallback icon');
                   setProfilePhoto(null); // Si falla, mostrar ícono

@@ -146,6 +146,10 @@ export function EditProfile() {
       setError('');
       setSaving(true);
       await profilePhotoService.uploadPhoto(file);
+      
+      // Esperar un momento para que el backend procese la imagen
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       // recargar perfil desde backend para obtener nueva foto y valores normalizados
       const data = await authService.getMyProfile();
       setProfile(data.profile || {});
@@ -160,7 +164,7 @@ export function EditProfile() {
       });
       
       // Disparar evento personalizado para actualizar la navbar
-      window.dispatchEvent(new CustomEvent('profilePhotoUpdated'));
+      window.dispatchEvent(new CustomEvent('profilePhotoUpdated', { detail: { timestamp: Date.now() } }));
     } catch (err) {
       console.error('Upload error:', err);
       setError(err.response?.data?.message || err.message || 'Error al subir foto');
@@ -220,7 +224,7 @@ export function EditProfile() {
       });
       
       // Disparar evento personalizado para actualizar la navbar
-      window.dispatchEvent(new CustomEvent('profilePhotoUpdated'));
+      window.dispatchEvent(new CustomEvent('profilePhotoUpdated', { detail: { timestamp: Date.now() } }));
 
       // redirigir al perfil (ajusta la ruta si tu ruta real es distinta)
       setTimeout(() => navigate('/Perfil'), 800);
