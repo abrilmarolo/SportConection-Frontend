@@ -562,7 +562,7 @@ export function Match() {
 
                                                 {card.profile_type === 'team' && additionalInfo.job && (
                                                     <div className="text-xs text-slate-400">
-                                                        Posición: {additionalInfo.job}
+                                                        Representante: {additionalInfo.job}
                                                     </div>
                                                 )}
 
